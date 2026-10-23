@@ -4,7 +4,6 @@ using CadastroService.Core.Application.Features.ConsultarCadastro;
 using CadastroService.Core.Application.Features.ConsultarUsuario;
 using CadastroService.Core.Application.Features.CriarIdentidade;
 using CadastroService.Core.Domain.Identity;
-using CadastroService.Core.Application.Features.CriarUsuario;
 using CadastroService.Core.Application.Features.EnviarBoasVindas;
 using CadastroService.Core.Domain.Notifications;
 using CadastroService.Core.Application.Features.ExcluirUsuario;
@@ -41,7 +40,6 @@ public static class DependencyInjection
     {
         services.AddInfrastructure(config);
         services.AddProcessarCadastro();
-        services.AddCriarUsuario();
         services.AddCriarIdentidade();
         services.AddAtivarUsuario();
         services.AddRejeitarUsuario();
@@ -64,8 +62,6 @@ public static class DependencyInjection
         services.AddScoped<CadastroDispatcher>();
         services.AddScoped<RegistrarPassoHandler>();
     }
-
-    private static void AddCriarUsuario(this IServiceCollection services) => services.AddScoped<CriarUsuarioHandler>();
 
     private static void AddCriarIdentidade(this IServiceCollection services) => services.AddScoped<CriarIdentidadeHandler>();
 

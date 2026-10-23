@@ -1,7 +1,6 @@
 using CadastroService.Core.Application.Features.AtivarUsuario;
 using CadastroService.Core.Application.Features.CriarIdentidade;
 using CadastroService.Core.Domain.Identity;
-using CadastroService.Core.Application.Features.CriarUsuario;
 using CadastroService.Core.Application.Features.EnviarBoasVindas;
 using CadastroService.Core.Domain.Notifications;
 using CadastroService.Core.Application.Features.ProcessarCadastro;
@@ -14,18 +13,11 @@ namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Tempora
 
 /// <summary>
 /// As activities do workflow: a porta de entrada pela qual o Temporal chama os casos de uso do Application. O nome de cada uma é o
-/// nome do método sem o sufixo Async ("CriarUsuario"). Cada execução usa um DbContext novo e faz o próprio commit;
+/// nome do método sem o sufixo Async ("CriarNoKeycloak"). Cada execução usa um DbContext novo e faz o próprio commit;
 /// uma recusa de negócio vira erro não repetível do tipo Refused, que o TemporalCadastroSteps traduz em StepRefusedException.
 /// </summary>
 public sealed class CadastroActivities(IServiceScopeFactory scopes)
 {
-    [Activity]
-    public Task CriarUsuarioAsync(string cadastroId, string username, string email, string nome) => Execute(async (sp, ct) =>
-    {
-        var result = await sp.GetRequiredService<CriarUsuarioHandler>().Handle(cadastroId, username, email, nome, ct);
-        if (!result.Created) throw Refusal(result.Motivo!);
-    });
-
     [Activity]
     public async Task<string> CriarNoKeycloakAsync(string username, string email, string nome)
     {

@@ -3,7 +3,6 @@ namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Tempora
 /// <summary>Os nomes das activities e o tipo de erro que significa recusa de negócio.</summary>
 public static class Activities
 {
-    public const string CriarUsuario = "CriarUsuario";
     public const string CriarNoKeycloak = "CriarNoKeycloak";
     public const string AtivarUsuario = "AtivarUsuario";
     public const string EnviarBoasVindas = "EnviarBoasVindas";

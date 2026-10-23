@@ -18,8 +18,6 @@ public class CadastroSagaTests
         public string? KeycloakId { get; private set; }
         public string? RecusarEm { get; init; }
 
-        public Task CriarUsuario(CadastroData data) => Run(nameof(CriarUsuario));
-
         public async Task<string> CriarNoKeycloak(CadastroData data)
         {
             await Run(nameof(CriarNoKeycloak));
@@ -50,7 +48,7 @@ public class CadastroSagaTests
     }
 
     [Fact]
-    public async Task CaminhoFelizPercorreOsQuatroPassosAteConcluido()
+    public async Task CaminhoFelizPercorreOsTresPassosAteConcluido()
     {
         var steps = new FakeSteps();
 
@@ -58,24 +56,10 @@ public class CadastroSagaTests
 
         Assert.Equal(Steps.Concluido, final);
         Assert.Equal(Steps.Concluido, steps.Estado);
-        Assert.Equal(["CriandoUsuario", "CriandoIdentidade", "AtivandoUsuario", "EnviandoBoasVindas", "Concluido"], steps.Historico);
-        Assert.Equal(["CriarUsuario", "CriarNoKeycloak", "AtivarUsuario", "EnviarBoasVindas"], steps.Calls);
+        Assert.Equal(["CriandoIdentidade", "AtivandoUsuario", "EnviandoBoasVindas", "Concluido"], steps.Historico);
+        Assert.Equal(["CriarNoKeycloak", "AtivarUsuario", "EnviarBoasVindas"], steps.Calls);
         Assert.Equal("kc-ana", steps.KeycloakId);
         Assert.Null(steps.Motivo);
-    }
-
-    [Fact]
-    public async Task RecusaNoPrimeiroPassoCancelaSemCompensar()
-    {
-        var steps = new FakeSteps { RecusarEm = "CriarUsuario" };
-
-        var final = await new CadastroSaga(steps).Run(Ana);
-
-        Assert.Equal(Steps.Cancelado, final);
-        Assert.Equal(Steps.Cancelado, steps.Estado);
-        Assert.Equal(["CriandoUsuario", "Cancelado"], steps.Historico);
-        Assert.Equal(["CriarUsuario"], steps.Calls);
-        Assert.Equal("recusado em CriarUsuario", steps.Motivo);
     }
 
     [Fact]
@@ -87,8 +71,8 @@ public class CadastroSagaTests
 
         Assert.Equal(Steps.Cancelado, final);
         Assert.Equal(Steps.Cancelado, steps.Estado);
-        Assert.Equal(["CriandoUsuario", "CriandoIdentidade", "RejeitandoUsuario", "Cancelado"], steps.Historico);
-        Assert.Equal(["CriarUsuario", "CriarNoKeycloak", "RejeitarUsuario(recusado em CriarNoKeycloak)"], steps.Calls);
+        Assert.Equal(["CriandoIdentidade", "RejeitandoUsuario", "Cancelado"], steps.Historico);
+        Assert.Equal(["CriarNoKeycloak", "RejeitarUsuario(recusado em CriarNoKeycloak)"], steps.Calls);
         Assert.Equal("recusado em CriarNoKeycloak", steps.Motivo);
         Assert.Null(steps.KeycloakId);
     }

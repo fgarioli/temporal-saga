@@ -28,7 +28,7 @@ public sealed class Usuario
         Motivo = motivo;
     }
 
-    /// <summary>T1: o usuário nasce pendente e ainda não pode fazer login.</summary>
+    /// <summary>O usuário nasce pendente (criado no POST /cadastros) e ainda não pode fazer login.</summary>
     public static Usuario Create(string id, string username, string email, string nome) =>
         new(id, username, email, nome, StatusUsuario.Pendente, null, null);
 
@@ -41,7 +41,7 @@ public sealed class Usuario
         KeycloakId = keycloakId;
     }
 
-    /// <summary>C1, a compensação de T1: o cadastro termina rejeitado, com o motivo.</summary>
+    /// <summary>C1, a compensação do usuário criado no POST: o cadastro termina rejeitado, com o motivo.</summary>
     public void Rejeitar(string motivo)
     {
         if (Status == StatusUsuario.Rejeitado) return;

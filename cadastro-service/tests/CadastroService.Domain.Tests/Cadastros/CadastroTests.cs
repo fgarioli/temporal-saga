@@ -38,11 +38,11 @@ public class CadastroTests
     {
         var cadastro = Novo();
 
-        cadastro.RegistrarPasso(Steps.CriandoUsuario);
         cadastro.RegistrarPasso(Steps.CriandoIdentidade);
+        cadastro.RegistrarPasso(Steps.AtivandoUsuario);
 
-        Assert.Equal(Steps.CriandoIdentidade, cadastro.Estado);
-        Assert.Equal([Steps.CriandoUsuario, Steps.CriandoIdentidade], cadastro.Historico);
+        Assert.Equal(Steps.AtivandoUsuario, cadastro.Estado);
+        Assert.Equal([Steps.CriandoIdentidade, Steps.AtivandoUsuario], cadastro.Historico);
     }
 
     [Fact]
@@ -50,11 +50,11 @@ public class CadastroTests
     {
         var cadastro = Novo();
 
-        cadastro.RegistrarPasso(Steps.CriandoUsuario);
-        cadastro.RegistrarPasso(Steps.CriandoUsuario);
+        cadastro.RegistrarPasso(Steps.CriandoIdentidade);
+        cadastro.RegistrarPasso(Steps.CriandoIdentidade);
 
-        Assert.Equal([Steps.CriandoUsuario], cadastro.Historico);
-        Assert.Equal(Steps.CriandoUsuario, cadastro.Estado);
+        Assert.Equal([Steps.CriandoIdentidade], cadastro.Historico);
+        Assert.Equal(Steps.CriandoIdentidade, cadastro.Estado);
     }
 
     [Fact]
@@ -62,11 +62,11 @@ public class CadastroTests
     {
         var cadastro = Novo();
 
-        cadastro.RegistrarPasso(Steps.CriandoUsuario);
         cadastro.RegistrarPasso(Steps.CriandoIdentidade);
-        cadastro.RegistrarPasso(Steps.CriandoUsuario);
+        cadastro.RegistrarPasso(Steps.AtivandoUsuario);
+        cadastro.RegistrarPasso(Steps.CriandoIdentidade);
 
-        Assert.Equal([Steps.CriandoUsuario, Steps.CriandoIdentidade, Steps.CriandoUsuario], cadastro.Historico);
+        Assert.Equal([Steps.CriandoIdentidade, Steps.AtivandoUsuario, Steps.CriandoIdentidade], cadastro.Historico);
     }
 
     [Fact]

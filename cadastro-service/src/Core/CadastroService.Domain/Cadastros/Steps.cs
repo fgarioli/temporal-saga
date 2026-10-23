@@ -5,7 +5,6 @@ public static class Steps
 {
     public const string Pendente = "Pendente";
     public const string Iniciado = "Iniciado";
-    public const string CriandoUsuario = "CriandoUsuario";
     public const string CriandoIdentidade = "CriandoIdentidade";
     public const string AtivandoUsuario = "AtivandoUsuario";
     public const string EnviandoBoasVindas = "EnviandoBoasVindas";

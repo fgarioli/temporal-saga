@@ -25,8 +25,6 @@ public sealed class TemporalCadastroSteps : ICadastroSagaSteps
         },
     };
 
-    public Task CriarUsuario(CadastroData data) => Execute(Activities.CriarUsuario, data.CadastroId, data.Username, data.Email, data.Nome);
-
     public Task<string> CriarNoKeycloak(CadastroData data) => Execute<string>(Activities.CriarNoKeycloak, data.Username, data.Email, data.Nome);
 
     public Task AtivarUsuario(string cadastroId, string keycloakId) => Execute(Activities.AtivarUsuario, cadastroId, keycloakId);

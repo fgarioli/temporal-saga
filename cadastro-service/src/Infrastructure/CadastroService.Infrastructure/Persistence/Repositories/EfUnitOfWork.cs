@@ -1,5 +1,6 @@
 using CadastroService.Core.Domain.Common;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace CadastroService.Infrastructure.Persistence.Repositories;
 
@@ -15,6 +16,10 @@ public sealed class EfUnitOfWork(CadastroDbContext db) : IUnitOfWork
         catch (DbUpdateConcurrencyException e)
         {
             throw new ConcurrencyConflictException("O registro mudou depois de ser lido", e);
+        }
+        catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            throw new UniqueConstraintViolationException("A gravação violou uma restrição de unicidade", e);
         }
     }
 

@@ -4,25 +4,29 @@ Exemplo da parte prática do tech talk sobre o **Saga Pattern**, desenhado como 
 
 **O problema.** Cadastrar um usuário exige gravar no banco da aplicação **e** criar a identidade dele no Keycloak (no caso original, o Amazon Cognito). Nenhuma transação cobre os dois: se um der certo e o outro falhar, o usuário fica pela metade.
 
-**A solução.** O cadastro vira uma saga orquestrada pelo [Temporal](https://temporal.io). Cada passo é uma activity; o Temporal guarda o histórico, repete o que falhou por motivo técnico e, se o Keycloak recusar o cadastro de vez, a saga desfaz o que já tinha feito.
+**A solução.** O `POST /cadastros` grava o usuário como `Pendente` e o pedido de cadastro, na mesma transação do banco. Daí em diante o cadastro é uma saga orquestrada pelo [Temporal](https://temporal.io): ela começa no Keycloak, cada passo é uma activity, o Temporal guarda o histórico, repete o que falhou por motivo técnico e, se o Keycloak recusar o cadastro de vez, a saga desfaz o usuário que o POST criou.
 
 ## O fluxo
 
+Criar o usuário no banco local (T1) é um passo local e síncrono do `POST /cadastros`: ele e o pedido de cadastro são gravados no mesmo `SaveChanges`, numa transação só. Um username já em uso é recusado ali, com `409`, sem gravar nada e sem iniciar saga. A saga cobre o que o banco local não alcança, o Keycloak em diante:
+
 | # | Passo | Tipo | Se falhar |
 |---|---|---|---|
-| 1 | Gravar o usuário como `Pendente` | compensável | username já usado: a saga termina `Cancelado`, sem nada para desfazer |
-| 2 | Criar o usuário no Keycloak | **pivô** | falha temporária: o Temporal tenta de novo. Username ou e-mail já existente no Keycloak: compensa o passo 1 |
-| 3 | Marcar o usuário como `Ativo`, com o id do Keycloak | repetível | o Temporal tenta de novo |
-| 4 | Enviar o e-mail de boas-vindas | repetível | o Temporal tenta de novo |
-| C1 | Marcar o usuário como `Rejeitado`, com o motivo | compensação de 1 | o Temporal tenta de novo |
+| T1 | Gravar o usuário como `Pendente` e o cadastro como `Pendente` (no `POST /cadastros`, fora da saga) | síncrono, local | username já usado: `409 username_em_uso`, nada é gravado |
+| T2 | Criar o usuário no Keycloak | **pivô** | falha temporária: o Temporal tenta de novo. Username ou e-mail já existente no Keycloak: compensa com C1 |
+| T3 | Marcar o usuário como `Ativo`, com o id do Keycloak | repetível | o Temporal tenta de novo |
+| T4 | Enviar o e-mail de boas-vindas | repetível | o Temporal tenta de novo |
+| C1 | Marcar o usuário como `Rejeitado`, com o motivo | compensação do usuário criado no POST | o Temporal tenta de novo |
 
 ```mermaid
 flowchart LR
-    API[POST /cadastros] --> TAB[(tabela cadastros<br/>Pendente)] --> D[Dispatcher] --> T1[1 · Usuário pendente]
-    T1 --> T2{{2 · Criar no Keycloak<br/>pivô}}
-    T2 -->|ok| T3[3 · Ativar] --> T4[4 · Boas-vindas] --> OK([Concluido])
-    T2 -->|recusado| C1[Rejeitar usuário] --> KO([Cancelado])
+    API[POST /cadastros] -->|username em uso| E409([409])
+    API --> T1[T1 · usuário Pendente + cadastro Pendente<br/>uma transação] --> D[Dispatcher] --> T2{{T2 · Criar no Keycloak<br/>pivô}}
+    T2 -->|ok| T3[T3 · Ativar] --> T4[T4 · Boas-vindas] --> OK([Concluido])
+    T2 -->|recusado| C1[C1 · Rejeitar usuário] --> KO([Cancelado])
 ```
+
+O histórico do cadastro registra só os passos da saga. Caminho feliz: `CriandoIdentidade`, `AtivandoUsuario`, `EnviandoBoasVindas`, `Concluido`. Recusa do Keycloak: `CriandoIdentidade`, `RejeitandoUsuario`, `Cancelado`.
 
 O **perfil padrão** (papel `cliente`) não é um passo da saga: é o *default role* do realm, e o próprio Keycloak o aplica a todo usuário novo.
 
@@ -34,16 +38,17 @@ O serviço roda em **dois containers**, construídos da mesma solution:
 
 | Container | Projeto | O que faz |
 |---|---|---|
-| `cadastro-web` | `CadastroService.Web` | A API REST: registra o cadastro como `Pendente` e consulta o estado, tudo no Postgres. Não conhece a saga nem o Temporal |
+| `cadastro-web` | `CadastroService.Web` | A API REST: cria o usuário `Pendente` e registra o cadastro como `Pendente` (T1, numa transação) e consulta o estado, tudo no Postgres. Não conhece a saga nem o Temporal |
 | `cadastro-worker` | `CadastroService.Worker` | O dispatcher (entrega os cadastros pendentes à saga) e o worker do Temporal: busca as tarefas na task queue `cadastro` e executa o workflow e as activities. Aplica as migrations ao subir |
 
 Separar os dois permite escalar cada um conforme a carga: mais réplicas do worker não mudam nada na API, e o Temporal distribui as tarefas entre elas. A web fala só com o Postgres; o worker fala com o Postgres, o Temporal, o Keycloak e o SMTP. Os dois containers nunca falam entre si: a **tabela `cadastros` é o elo** entre eles.
 
 O que importa na saga:
 
-- **Estado da saga:** na tabela `cadastros` (estado atual, histórico, motivo e id no Keycloak). Cada passo é gravado pela activity `RegistrarPasso`, e `GET /cadastros/{id}` lê essa tabela; a query do Temporal não é usada. O histórico de execução (tentativas, repetições) fica no Temporal e aparece na Temporal UI. O status do usuário (`Pendente`, `Ativo`, `Rejeitado`) é o reflexo dele no banco e serve de **trava semântica**: um usuário pendente não pode ser excluído (409).
+- **Estado da saga:** na tabela `cadastros` (estado atual, histórico, motivo e id no Keycloak). Cada passo é gravado pela activity `RegistrarPasso`, e `GET /cadastros/{id}` lê essa tabela; a query do Temporal não é usada. O histórico de execução (tentativas, repetições) fica no Temporal e aparece na Temporal UI. O status do usuário (`Pendente`, `Ativo`, `Rejeitado`) é o reflexo dele no banco e serve de **trava semântica**: um usuário pendente (criado no POST, antes de a saga terminar) não pode ser excluído (409).
 - **Retry:** política `StepPolicy` (`Application/Features/ProcessarCadastro/StepPolicy.cs`): timeout de 30 s por passo e espera exponencial de 200 ms a 10 s, sem limite de tentativas para falhas técnicas. Só uma recusa de negócio (`StepRefusedException`) interrompe.
-- **Idempotência:** o Temporal pode repetir uma activity. Criar o usuário duas vezes não duplica; se o Keycloak responder "já existe" com o mesmo username e e-mail, é uma tentativa anterior deste mesmo cadastro, e ele segue. O envio do e-mail é registrado para não repetir.
+- **Idempotência:** o Temporal pode repetir uma activity. Se o Keycloak responder "já existe" com o mesmo username e e-mail, é uma tentativa anterior deste mesmo cadastro, e ele segue. O envio do e-mail é registrado para não repetir.
+- **Username único:** um índice único (filtrado por status diferente de `Rejeitado`) garante um username por cadastro não rejeitado. O `CadastrarHandler` checa antes de gravar; na corrida entre dois POSTs com o mesmo username, o índice decide: o `EfUnitOfWork` traduz a violação (`SqlState` 23505 do Postgres) em `UniqueConstraintViolationException`, e o handler a converte em `409 username_em_uso`.
 - **Concorrência otimista:** a coluna `xmin` do Postgres é a versão da linha. Duas gravações sobre a mesma versão: a segunda falha, em vez de sobrescrever a primeira.
 - **Um cadastro, um workflow:** o id do workflow é o id do cadastro, então o mesmo cadastro nunca roda duas vezes. O dispatcher faz polling a cada 1 s com `FOR UPDATE SKIP LOCKED`, então várias réplicas do worker nunca pegam o mesmo cadastro.
 
@@ -54,7 +59,7 @@ Pré-requisito: Docker com o Compose v2 e cerca de 3 GB de memória livres para 
 ```bash
 docker compose up -d --build              # Postgres, Temporal, Temporal UI, Keycloak, Mailpit, cadastro-web e cadastro-worker
 docker compose run --rm e2e               # 7 cenários ponta a ponta
-docker compose run --rm integration-tests # concorrência otimista contra o Postgres
+docker compose run --rm integration-tests # concorrência otimista e username único contra o Postgres
 docker compose down -v                    # desliga e apaga os dados
 ```
 
@@ -83,6 +88,8 @@ curl -s -X POST localhost:8090/cadastros -H 'content-type: application/json' \
   -d '{"username":"ana","email":"ana@exemplo.com","nome":"Ana Souza"}'
 curl -s localhost:8090/cadastros/<cadastroId>    # estado e histórico, lidos da tabela cadastros
 curl -s localhost:8090/usuarios/<cadastroId>     # o usuário no banco
+curl -s -i -X POST localhost:8090/cadastros -H 'content-type: application/json' \
+  -d '{"username":"ana","email":"outra@exemplo.com","nome":"Outra Ana"}'   # mesmo username: 409 {"erro":"username_em_uso",...}
 curl -s -X POST localhost:8090/simulations/failures -H 'content-type: application/json' -d '{"quantity":2}'
 ```
 
@@ -115,14 +122,15 @@ cadastro-service/
   src/
     Core/
       CadastroService.Domain/        por agregado: Usuarios/ (Usuario, StatusUsuario, NovoCadastro, IUsuarioRepository),
-                                     Envios/ (Envio, IEnvioRepository), Common/ (IUnitOfWork, ITransaction, DomainException),
+                                     Envios/ (Envio, IEnvioRepository), Common/ (IUnitOfWork, ITransaction, DomainException, ConcurrencyConflictException,
+                                     UniqueConstraintViolationException),
                                      Cadastros/ (Cadastro, CadastroData, CadastroState, Steps, ICadastroRepository),
                                      Identity/ (IIdentityProvider, NewIdentity, IdentityProviderUser, IdentityAlreadyExistsException),
                                      Notifications/ (IEmailSender), Simulations/ (SimulatedFailures, ISimulatedFailures)
       CadastroService.Application/
         Features/                    um slice por caso de uso, com o handler e o que só ele usa:
-          Cadastrar/ ConsultarCadastro/ ConsultarUsuario/ ExcluirUsuario/ SimularFalhas/   usados pela Web
-          CriarUsuario/ CriarIdentidade/ AtivarUsuario/ RejeitarUsuario/ EnviarBoasVindas/  chamados pelos passos da saga
+          Cadastrar/ ConsultarCadastro/ ConsultarUsuario/ ExcluirUsuario/ SimularFalhas/   usados pela Web (Cadastrar cria o usuário e o cadastro Pendente)
+          CriarIdentidade/ AtivarUsuario/ RejeitarUsuario/ EnviarBoasVindas/  chamados pelos passos da saga
           ProcessarCadastro/         CadastroSaga, ICadastroSagaSteps, ISagaRunner, StepPolicy, StepRefusedException,
                                      CadastroDispatcher, RegistrarPassoHandler
     Infrastructure/
@@ -140,8 +148,8 @@ cadastro-service/
                                      Saga e Activities (os nomes)
   tests/
     CadastroService.Domain.Tests/          regras do Usuario, do Cadastro, do SimulatedFailures, do NovoCadastro e do NewIdentity (referencia só o Domain)
-    CadastroService.Application.Tests/     CadastroSaga (com fake de ICadastroSagaSteps), CriarIdentidadeHandler (referencia só o Application)
-    CadastroService.Infrastructure.Tests/  teste de integração de concorrência, contra o Postgres
+    CadastroService.Application.Tests/     CadastrarHandler, CadastroSaga (com fake de ICadastroSagaSteps), CriarIdentidadeHandler, ExcluirUsuarioHandler (referencia só o Application)
+    CadastroService.Infrastructure.Tests/  testes de integração, contra o Postgres: concorrência otimista e username único
 infra/                           realm do Keycloak (com o default role) e init do Postgres
 e2e/                             testes ponta a ponta (run.mjs)
 Makefile                         alvos para rodar web e worker fora do Docker
@@ -151,11 +159,11 @@ Um slice não importa outro slice; o que é compartilhado vive no Domain (as por
 
 ### Do POST ao usuário ativo
 
-1. `POST /cadastros` → `CadastrarEndpoint` (Web) → `CadastrarHandler` grava o cadastro na tabela `cadastros` como `Pendente` e responde.
+1. `POST /cadastros` → `CadastrarEndpoint` (Web) → `CadastrarHandler` (T1): checa o username (`IsUsernameInUse`) e grava o usuário `Pendente` (tabela `usuarios`) e o cadastro `Pendente` (tabela `cadastros`) no mesmo `SaveChanges`. Responde `202` com o andamento e o `Location`; username em uso (na checagem ou na corrida, via `UniqueConstraintViolationException`): `409 {"erro":"username_em_uso","mensagem":"O username <x> já está em uso"}`, sem gravar nada.
 2. No worker, o `DispatcherService` roda a cada 1 s um ciclo do `CadastroDispatcher`: numa transação, `ClaimPending` pega os pendentes com `FOR UPDATE SKIP LOCKED` e o `ISagaRunner` inicia a saga de cada um; depois o cadastro é marcado `Iniciado`.
 3. O `TemporalSagaRunner` inicia o workflow no Temporal com id igual ao `cadastroId`. Se o workflow já existe, é sucesso, não erro.
 4. O `TemporalCadastroWorkflow` (fino) executa a `CadastroSaga` do Application com os passos do `TemporalCadastroSteps`.
-5. Cada passo vira uma activity do Temporal (`CadastroActivities`), que chama o handler do slice correspondente (`CriarUsuarioHandler`, `CriarIdentidadeHandler`, `AtivarUsuarioHandler`, `EnviarBoasVindasHandler`, `RejeitarUsuarioHandler`). O andamento é gravado pela activity `RegistrarPasso` (`RegistrarPassoHandler`) na tabela `cadastros`.
+5. Cada passo vira uma activity do Temporal (`CadastroActivities`), que chama o handler do slice correspondente (`CriarIdentidadeHandler`, `AtivarUsuarioHandler`, `EnviarBoasVindasHandler`, `RejeitarUsuarioHandler`). O andamento é gravado pela activity `RegistrarPasso` (`RegistrarPassoHandler`) na tabela `cadastros`.
 6. `GET /cadastros/{id}` → `ConsultarCadastroHandler` lê a tabela `cadastros`.
 
 ### O motor da saga é um adaptador
@@ -164,9 +172,9 @@ A `CadastroSaga` (`Application/Features/ProcessarCadastro/CadastroSaga.cs`) é o
 
 | Peça | Papel |
 |---|---|
-| `ICadastroSagaSteps` | porta: os passos da saga (T1 a T4, a compensação C1 e `RegistrarPasso`) |
+| `ICadastroSagaSteps` | porta: os passos da saga (T2 a T4, a compensação C1 e `RegistrarPasso`) |
 | `ISagaRunner` | porta: inicia a saga de um cadastro, de forma idempotente |
-| `StepRefusedException` | recusa de negócio: não se repete; a saga compensa e cancela |
+| `StepRefusedException` | recusa de negócio (o Keycloak recusou o cadastro): não se repete; a saga compensa com C1 e cancela |
 | `StepPolicy` | timeout e retry de cada passo |
 
 O Temporal é um adaptador em `Worker/Features/ProcessarCadastro/Temporal/`: `TemporalCadastroSteps` implementa a porta com `Workflow.ExecuteActivityAsync` (chamando as activities pelo nome, em `Activities`) e traduz o erro `Refused` em `StepRefusedException`; `TemporalSagaRunner` implementa o `ISagaRunner`; `TemporalCadastroWorkflow` liga a saga ao Temporal. Trocar de motor é escrever outro adaptador; a saga não muda. O teste `CadastroSagaTests` roda a saga inteira com um fake da porta, sem Temporal.

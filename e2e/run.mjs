@@ -52,11 +52,11 @@ const cenarios = [];
 const cenario = (nome, fn) => cenarios.push({ nome, fn });
 let primeiro;
 
-cenario('caminho feliz: os 4 passos até Concluido, com o usuário no Keycloak e o e-mail no Mailpit', async () => {
+cenario('caminho feliz: o usuário pendente no POST e os 3 passos da saga até Concluido, com o usuário no Keycloak e o e-mail no Mailpit', async () => {
   const username = `ana-${id()}`; const email = `${username}@exemplo.com`;
   const cadastroId = await cadastrar(username, email);
   const fim = await aguardarFim(cadastroId);
-  igual(fim.historico, ['CriandoUsuario', 'CriandoIdentidade', 'AtivandoUsuario', 'EnviandoBoasVindas', 'Concluido'], 'histórico');
+  igual(fim.historico, ['CriandoIdentidade', 'AtivandoUsuario', 'EnviandoBoasVindas', 'Concluido'], 'histórico');
   const usuario = (await http('GET', `${URL_.cadastro}/usuarios/${cadastroId}`)).body;
   igual(usuario.status, 'Ativo', 'status do usuário');
   const noKeycloak = await usuariosNoKeycloak(username);
@@ -80,15 +80,15 @@ cenario('Keycloak recusa (username já existe lá): compensa rejeitando o usuár
   igual(criado.status, 201, 'usuário criado direto no Keycloak, por outro sistema');
   const cadastroId = await cadastrar(username, `${username}@exemplo.com`, 'Bia Lima');
   const fim = await aguardarFim(cadastroId);
-  igual(fim.historico, ['CriandoUsuario', 'CriandoIdentidade', 'RejeitandoUsuario', 'Cancelado'], 'histórico');
+  igual(fim.historico, ['CriandoIdentidade', 'RejeitandoUsuario', 'Cancelado'], 'histórico');
   assert(fim.motivo?.includes('Keycloak'), `motivo: ${fim.motivo}`);
   igual((await http('GET', `${URL_.cadastro}/usuarios/${cadastroId}`)).body.status, 'Rejeitado', 'usuário rejeitado');
 });
 
-cenario('username já usado no sistema: T1 recusa e a saga termina sem nada para compensar', async () => {
-  const cadastroId = await cadastrar(primeiro.username, `repetido-${id()}@exemplo.com`);
-  const fim = await aguardarFim(cadastroId);
-  igual(fim.historico, ['CriandoUsuario', 'Cancelado'], 'histórico');
+cenario('username já usado no sistema: o POST responde 409 e nenhuma saga é iniciada', async () => {
+  const r = await http('POST', `${URL_.cadastro}/cadastros`, { username: primeiro.username, email: `repetido-${id()}@exemplo.com`, nome: 'Ana Souza' });
+  igual(r.status, 409, 'POST /cadastros com username em uso deveria responder 409');
+  igual(r.body, { erro: 'username_em_uso', mensagem: `O username ${primeiro.username} já está em uso` }, 'corpo da recusa');
 });
 
 cenario('falha temporária do Keycloak: resolvida com nova tentativa, sem compensar', async () => {

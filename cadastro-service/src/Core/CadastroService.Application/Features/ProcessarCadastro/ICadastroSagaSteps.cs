@@ -9,16 +9,13 @@ namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 /// </summary>
 public interface ICadastroSagaSteps
 {
-    /// <summary>T1, compensável: o usuário nasce pendente no banco.</summary>
-    Task CriarUsuario(CadastroData data);
-
     /// <summary>T2, o pivô: cria a identidade no Keycloak e devolve o id dela.</summary>
     Task<string> CriarNoKeycloak(CadastroData data);
 
     /// <summary>T3, repetível.</summary>
     Task AtivarUsuario(string cadastroId, string keycloakId);
 
-    /// <summary>C1, a compensação de T1.</summary>
+    /// <summary>C1, a compensação do usuário criado no POST.</summary>
     Task RejeitarUsuario(string cadastroId, string motivo);
 
     /// <summary>T4, repetível.</summary>
