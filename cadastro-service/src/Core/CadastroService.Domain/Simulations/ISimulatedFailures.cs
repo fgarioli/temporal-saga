@@ -1,4 +1,4 @@
-namespace CadastroService.Core.Application.Features.SimularFalhas;
+namespace CadastroService.Core.Domain.Simulations;
 
 /// <summary>Porta de saída (só demonstração): agenda falhas simuladas do Keycloak.</summary>
 public interface ISimulatedFailures

@@ -1,3 +1,5 @@
+using CadastroService.Core.Domain.Notifications;
+
 using CadastroService.Core.Domain.Envios;
 
 namespace CadastroService.Core.Application.Features.EnviarBoasVindas;

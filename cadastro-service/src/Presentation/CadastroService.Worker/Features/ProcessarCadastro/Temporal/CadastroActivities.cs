@@ -1,7 +1,9 @@
 using CadastroService.Core.Application.Features.AtivarUsuario;
 using CadastroService.Core.Application.Features.CriarIdentidade;
+using CadastroService.Core.Domain.Identity;
 using CadastroService.Core.Application.Features.CriarUsuario;
 using CadastroService.Core.Application.Features.EnviarBoasVindas;
+using CadastroService.Core.Domain.Notifications;
 using CadastroService.Core.Application.Features.ProcessarCadastro;
 using CadastroService.Core.Application.Features.RejeitarUsuario;
 using CadastroService.Core.Domain.Common;

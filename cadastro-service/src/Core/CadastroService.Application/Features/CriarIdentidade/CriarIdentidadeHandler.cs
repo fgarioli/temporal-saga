@@ -1,3 +1,5 @@
+using CadastroService.Core.Domain.Identity;
+
 namespace CadastroService.Core.Application.Features.CriarIdentidade;
 
 /// <summary>

@@ -1,4 +1,4 @@
-using CadastroService.Core.Application.Features.CriarIdentidade;
+using CadastroService.Core.Domain.Identity;
 using CadastroService.Infrastructure.Identity;
 
 namespace CadastroService.Infrastructure.Simulations;

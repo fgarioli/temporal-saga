@@ -1,7 +1,7 @@
-using CadastroService.Core.Application.Common.Ports;
-using CadastroService.Core.Application.Features.CriarIdentidade;
-using CadastroService.Core.Application.Features.EnviarBoasVindas;
-using CadastroService.Core.Application.Features.SimularFalhas;
+using CadastroService.Core.Domain.Cadastros;
+using CadastroService.Core.Domain.Identity;
+using CadastroService.Core.Domain.Notifications;
+using CadastroService.Core.Domain.Simulations;
 using CadastroService.Core.Domain.Common;
 using CadastroService.Core.Domain.Envios;
 using CadastroService.Core.Domain.Usuarios;

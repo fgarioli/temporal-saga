@@ -1,4 +1,4 @@
-namespace CadastroService.Core.Application.Features.CriarIdentidade;
+namespace CadastroService.Core.Domain.Identity;
 
 /// <summary>Porta de saída para o Keycloak. Create lança IdentityAlreadyExistsException em caso de conflito.</summary>
 public interface IIdentityProvider

@@ -1,4 +1,4 @@
-using CadastroService.Core.Application.Common.Ports;
+using CadastroService.Core.Domain.Cadastros;
 
 namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 

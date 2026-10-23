@@ -1,5 +1,5 @@
 using System.Net.Mail;
-using CadastroService.Core.Application.Features.EnviarBoasVindas;
+using CadastroService.Core.Domain.Notifications;
 using Microsoft.Extensions.Options;
 
 namespace CadastroService.Infrastructure.Email;

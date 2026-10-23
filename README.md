@@ -101,7 +101,7 @@ O endpoint `/simulations/failures` existe só para a demonstração: faz o Keycl
 
 ## Organização do código
 
-Uma solution .NET com seis projetos em `src` e três de teste. O modelo é **híbrido**: os projetos da Clean Architecture ficam como camadas, e dentro de Application, Web e Worker o código se organiza por **vertical slices** (`Features/<Slice>/`). Infrastructure e Domain se organizam por tecnologia e por agregado. Regra de dependência, sempre para dentro: **Web e Worker → IoC → Infrastructure → Application → Domain** (o IoC também referencia o Application). Web e Worker referenciam só o IoC. O Domain não depende de ninguém, e o Application não conhece o Infrastructure nem o IoC.
+Uma solution .NET com seis projetos em `src` e três de teste. O modelo é **híbrido**: os projetos da Clean Architecture ficam como camadas, e dentro de Application, Web e Worker o código se organiza por **vertical slices** (`Features/<Slice>/`). Infrastructure e Domain se organizam por tecnologia e por agregado. Regra de dependência, sempre para dentro: **Web e Worker → IoC → Infrastructure e Application → Domain** (o IoC referencia os dois). Web e Worker referenciam só o IoC. O Domain não depende de ninguém, e o Application não conhece o Infrastructure nem o IoC. O Infrastructure não referencia o Application: as portas que ele implementa moram no Domain, e o Application as consome.
 
 Duas fronteiras:
 
@@ -115,10 +115,12 @@ cadastro-service/
   src/
     Core/
       CadastroService.Domain/        por agregado: Usuarios/ (Usuario, StatusUsuario, NovoCadastro, IUsuarioRepository),
-                                     Envios/ (Envio, IEnvioRepository), Common/ (IUnitOfWork, ITransaction, DomainException)
+                                     Envios/ (Envio, IEnvioRepository), Common/ (IUnitOfWork, ITransaction, DomainException),
+                                     Cadastros/ (CadastroData, CadastroState, Steps, ICadastroRepository),
+                                     Identity/ (IIdentityProvider, NewIdentity, IdentityProviderUser, IdentityAlreadyExistsException),
+                                     Notifications/ (IEmailSender), Simulations/ (ISimulatedFailures)
       CadastroService.Application/
-        Common/                      tipos compartilhados: Cadastros/ (CadastroData, CadastroState, Steps) e Ports/ (ICadastroRepository)
-        Features/                    um slice por caso de uso, com o handler e as portas que só ele usa:
+        Features/                    um slice por caso de uso, com o handler e o que só ele usa:
           Cadastrar/ ConsultarCadastro/ ConsultarUsuario/ ExcluirUsuario/ SimularFalhas/   usados pela Web
           CriarUsuario/ CriarIdentidade/ AtivarUsuario/ RejeitarUsuario/ EnviarBoasVindas/  chamados pelos passos da saga
           ProcessarCadastro/         CadastroSaga, ICadastroSagaSteps, ISagaRunner, StepPolicy, StepRefusedException,
@@ -137,15 +139,15 @@ cadastro-service/
                                      CadastroActivities, CadastroWorker, TemporalConnection, TemporalExtensions, TemporalOptions,
                                      Saga e Activities (os nomes)
   tests/
-    CadastroService.Domain.Tests/          regras do Usuario e do NovoCadastro (referencia só o Domain)
-    CadastroService.Application.Tests/     CadastroSaga (com fake de ICadastroSagaSteps), CriarIdentidadeHandler e NewIdentity (referencia só o Application)
+    CadastroService.Domain.Tests/          regras do Usuario, do NovoCadastro e do NewIdentity (referencia só o Domain)
+    CadastroService.Application.Tests/     CadastroSaga (com fake de ICadastroSagaSteps), CriarIdentidadeHandler (referencia só o Application)
     CadastroService.Infrastructure.Tests/  teste de integração de concorrência, contra o Postgres
 infra/                           realm do Keycloak (com o default role) e init do Postgres
 e2e/                             testes ponta a ponta (run.mjs)
 Makefile                         alvos para rodar web e worker fora do Docker
 ```
 
-Um slice não importa outro slice; o que é compartilhado vive em `Application/Common/`. Os handlers são classes simples, chamadas direto, sem mediator.
+Um slice não importa outro slice; o que é compartilhado vive no Domain (as portas e os tipos de `Cadastros/`, `Identity/`, `Notifications/` e `Simulations/`). Os handlers são classes simples, chamadas direto, sem mediator.
 
 ### Do POST ao usuário ativo
 

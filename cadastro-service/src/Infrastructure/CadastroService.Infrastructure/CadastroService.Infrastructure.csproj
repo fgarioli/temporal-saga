@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Tudo o que o sistema chama: Postgres (EF Core), Keycloak e SMTP. Implementa as portas do Application, de que depende (e, por ele, do Domain). -->
+  <!-- Tudo o que o sistema chama: Postgres (EF Core), Keycloak e SMTP. Implementa as portas do Domain, de que depende (não referencia o Application). -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -14,6 +14,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../Core/CadastroService.Application/CadastroService.Application.csproj" />
+    <ProjectReference Include="../../Core/CadastroService.Domain/CadastroService.Domain.csproj" />
   </ItemGroup>
 </Project>

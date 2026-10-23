@@ -1,4 +1,5 @@
 using CadastroService.Core.Application.Features.SimularFalhas;
+using CadastroService.Core.Domain.Simulations;
 
 namespace CadastroService.Presentation.Web.Features.SimularFalhas;
 

@@ -1,4 +1,4 @@
-using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Domain.Cadastros;
 using CadastroService.Core.Application.Features.ProcessarCadastro;
 using Xunit;
 

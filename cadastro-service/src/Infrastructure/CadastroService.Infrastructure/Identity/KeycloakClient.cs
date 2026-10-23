@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using CadastroService.Core.Application.Features.CriarIdentidade;
+using CadastroService.Core.Domain.Identity;
 using Microsoft.Extensions.Options;
 
 namespace CadastroService.Infrastructure.Identity;

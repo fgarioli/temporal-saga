@@ -1,7 +1,7 @@
-using CadastroService.Core.Application.Features.CriarIdentidade;
+using CadastroService.Core.Domain.Identity;
 using Xunit;
 
-namespace CadastroService.Core.Application.Tests.Features.CriarIdentidade;
+namespace CadastroService.Core.Domain.Tests.Identity;
 
 public class NewIdentityTests
 {

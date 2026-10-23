@@ -1,4 +1,5 @@
 using CadastroService.Core.Application.Features.CriarIdentidade;
+using CadastroService.Core.Domain.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
