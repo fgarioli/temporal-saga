@@ -20,6 +20,8 @@ public class CriarIdentidadeHandlerTests
             return Task.FromResult($"kc-{newIdentity.Username}");
         }
 
+        public Task Enable(string keycloakId, CancellationToken ct) => throw new NotSupportedException();
+
         public Task<IdentityProviderUser?> FindByUsername(string username, CancellationToken ct) =>
             Task.FromResult(Existing.GetValueOrDefault(username));
     }
@@ -34,7 +36,7 @@ public class CriarIdentidadeHandlerTests
     }
 
     [Fact]
-    public async Task UsuarioDeOutroCadastroERecusado()
+    public async Task UsuarioDeOutraIdentidadeERecusado()
     {
         var provider = new FakeIdentityProvider();
         provider.Existing["ana"] = new IdentityProviderUser("kc-x", "ana", "outra@x.com");
@@ -43,7 +45,7 @@ public class CriarIdentidadeHandlerTests
     }
 
     [Fact]
-    public async Task TentativaAnteriorDoMesmoCadastroEReconhecida()
+    public async Task TentativaAnteriorDoMesmoUsuarioEReconhecida()
     {
         var provider = new FakeIdentityProvider();
         provider.Existing["ana"] = new IdentityProviderUser("kc-ana", "ana", "ANA@x.com");

@@ -1,13 +1,13 @@
-using CadastroService.Core.Application.Features.AtivarUsuario;
-using CadastroService.Core.Application.Features.Cadastrar;
-using CadastroService.Core.Application.Features.ConsultarCadastro;
+using CadastroService.Core.Application.Features.CriarUsuario;
 using CadastroService.Core.Application.Features.ConsultarUsuario;
 using CadastroService.Core.Application.Features.CriarIdentidade;
 using CadastroService.Core.Domain.Identity;
 using CadastroService.Core.Application.Features.EnviarBoasVindas;
 using CadastroService.Core.Domain.Notifications;
 using CadastroService.Core.Application.Features.ExcluirUsuario;
-using CadastroService.Core.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Features.HabilitarUsuario;
+using CadastroService.Core.Application.Features.LiberarAcesso;
+using CadastroService.Core.Application.Features.ProvisionarUsuario;
 using CadastroService.Core.Application.Features.RejeitarUsuario;
 using CadastroService.Core.Application.Features.SimularFalhas;
 using CadastroService.Core.Domain.Simulations;
@@ -19,13 +19,12 @@ namespace CadastroService.Infrastructure.IoC;
 
 public static class DependencyInjection
 {
-    /// <summary>Container "web": a infraestrutura e os handlers da API (cadastrar, consultar, usuários). Não conhece a saga.</summary>
+    /// <summary>Container "web": a infraestrutura e os handlers da API (criar, consultar e excluir usuário). Não conhece a saga.</summary>
     public static IServiceCollection AddCadastroWeb(this IServiceCollection services, IConfiguration config)
     {
         services.AddInfrastructure(config);
         services.AddHealthChecks().AddCheck<PendingMigrationsHealthCheck>("database");
-        services.AddCadastrar();
-        services.AddConsultarCadastro();
+        services.AddCriarUsuario();
         services.AddConsultarUsuario();
         services.AddExcluirUsuario();
         if (Simulations.Enabled(config)) services.AddSimularFalhas();
@@ -39,17 +38,16 @@ public static class DependencyInjection
     public static IServiceCollection AddCadastroWorker(this IServiceCollection services, IConfiguration config)
     {
         services.AddInfrastructure(config);
-        services.AddProcessarCadastro();
+        services.AddProvisionarUsuario();
         services.AddCriarIdentidade();
-        services.AddAtivarUsuario();
+        services.AddHabilitarUsuario();
+        services.AddLiberarAcesso();
         services.AddRejeitarUsuario();
         services.AddEnviarBoasVindas();
         return services;
     }
 
-    private static void AddCadastrar(this IServiceCollection services) => services.AddScoped<CadastrarHandler>();
-
-    private static void AddConsultarCadastro(this IServiceCollection services) => services.AddScoped<ConsultarCadastroHandler>();
+    private static void AddCriarUsuario(this IServiceCollection services) => services.AddScoped<CriarUsuarioHandler>();
 
     private static void AddConsultarUsuario(this IServiceCollection services) => services.AddScoped<ConsultarUsuarioHandler>();
 
@@ -57,15 +55,17 @@ public static class DependencyInjection
 
     private static void AddSimularFalhas(this IServiceCollection services) => services.AddScoped<SimularFalhasHandler>();
 
-    private static void AddProcessarCadastro(this IServiceCollection services)
+    private static void AddProvisionarUsuario(this IServiceCollection services)
     {
-        services.AddScoped<CadastroDispatcher>();
+        services.AddScoped<ProvisionamentoDispatcher>();
         services.AddScoped<RegistrarPassoHandler>();
     }
 
     private static void AddCriarIdentidade(this IServiceCollection services) => services.AddScoped<CriarIdentidadeHandler>();
 
-    private static void AddAtivarUsuario(this IServiceCollection services) => services.AddScoped<AtivarUsuarioHandler>();
+    private static void AddHabilitarUsuario(this IServiceCollection services) => services.AddScoped<HabilitarUsuarioHandler>();
+
+    private static void AddLiberarAcesso(this IServiceCollection services) => services.AddScoped<LiberarAcessoHandler>();
 
     private static void AddRejeitarUsuario(this IServiceCollection services) => services.AddScoped<RejeitarUsuarioHandler>();
 

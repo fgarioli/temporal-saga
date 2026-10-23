@@ -21,7 +21,7 @@ public class UnitOfWorkUniqueConstraintTests
         new(new DbContextOptionsBuilder<CadastroDbContext>().UseNpgsql(ConnectionString).Options);
 
     [Fact]
-    public async Task SegundoUsuarioPendenteComOMesmoUsernameLancaUniqueConstraintViolationException()
+    public async Task SegundoUsuarioComOMesmoUsernameLancaUniqueConstraintViolationException()
     {
         if (ConnectionString is null) return;
         await using (var setup = NewContext())
@@ -30,11 +30,11 @@ public class UnitOfWorkUniqueConstraintTests
         }
         var username = $"teste-{Guid.NewGuid().ToString()[..8]}";
 
-        // Dois cadastros disputam o mesmo username: cada um com o próprio DbContext, como em duas requisições simultâneas.
+        // Dois usuários disputam o mesmo username: cada um com o próprio DbContext, como em duas requisições simultâneas.
         await using var a = NewContext();
         await using var b = NewContext();
-        new UsuarioRepository(a).Add(Usuario.Create(Guid.NewGuid().ToString(), username, $"{username}@a.com", "Ana"));
-        new UsuarioRepository(b).Add(Usuario.Create(Guid.NewGuid().ToString(), username, $"{username}@b.com", "Ana"));
+        new UsuarioRepository(a).Add(UsuariosDeTeste.Novo(Guid.NewGuid().ToString(), username, $"{username}@a.com", "Ana"));
+        new UsuarioRepository(b).Add(UsuariosDeTeste.Novo(Guid.NewGuid().ToString(), username, $"{username}@b.com", "Ana"));
 
         // O primeiro grava; o segundo é recusado pelo índice único, com a exceção do domínio, sem vazar a do EF Core.
         await new EfUnitOfWork(a).SaveChanges(default);

@@ -22,7 +22,42 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("CadastroService.Core.Domain.Cadastros.Cadastro", b =>
+            modelBuilder.Entity("CadastroService.Core.Domain.Envios.Envio", b =>
+                {
+                    b.Property<string>("UsuarioId")
+                        .HasColumnType("text")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<DateTimeOffset>("EnviadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enviado_em");
+
+                    b.HasKey("UsuarioId");
+
+                    b.ToTable("envios", (string)null);
+                });
+
+            modelBuilder.Entity("CadastroService.Core.Domain.Simulations.SimulatedFailures", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Remaining")
+                        .HasColumnType("integer")
+                        .HasColumnName("remaining");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("simulated_failures", (string)null);
+                });
+
+            modelBuilder.Entity("CadastroService.Core.Domain.Usuarios.Usuario", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text")
@@ -37,10 +72,14 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("email");
 
-                    b.Property<string>("Estado")
+                    b.Property<string>("Etapa")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("estado");
+                        .HasColumnName("etapa");
+
+                    b.Property<bool>("Habilitado")
+                        .HasColumnType("boolean")
+                        .HasColumnName("habilitado");
 
                     b.Property<string>("Historico")
                         .IsRequired()
@@ -65,82 +104,6 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("username");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("Estado");
-
-                    b.ToTable("cadastros", (string)null);
-                });
-
-            modelBuilder.Entity("CadastroService.Core.Domain.Envios.Envio", b =>
-                {
-                    b.Property<string>("CadastroId")
-                        .HasColumnType("text")
-                        .HasColumnName("cadastro_id");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("email");
-
-                    b.Property<DateTimeOffset>("EnviadoEm")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("enviado_em");
-
-                    b.HasKey("CadastroId");
-
-                    b.ToTable("envios", (string)null);
-                });
-
-            modelBuilder.Entity("CadastroService.Core.Domain.Simulations.SimulatedFailures", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Remaining")
-                        .HasColumnType("integer")
-                        .HasColumnName("remaining");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("simulated_failures", (string)null);
-                });
-
-            modelBuilder.Entity("CadastroService.Core.Domain.Usuarios.Usuario", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("email");
-
-                    b.Property<string>("KeycloakId")
-                        .HasColumnType("text")
-                        .HasColumnName("keycloak_id");
-
-                    b.Property<string>("Motivo")
-                        .HasColumnType("text")
-                        .HasColumnName("motivo");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("nome");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("username");
-
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -149,9 +112,11 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Etapa");
+
                     b.HasIndex("Username")
                         .IsUnique()
-                        .HasFilter("status <> 'Rejeitado'");
+                        .HasFilter("etapa <> 'Cancelado'");
 
                     b.ToTable("usuarios", (string)null);
                 });

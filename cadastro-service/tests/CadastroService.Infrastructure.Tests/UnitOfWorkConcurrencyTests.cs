@@ -30,7 +30,7 @@ public class UnitOfWorkConcurrencyTests
         var id = Guid.NewGuid().ToString();
         await using (var seed = NewContext())
         {
-            new UsuarioRepository(seed).Add(Usuario.Create(id, $"teste-{id[..8]}", $"{id[..8]}@exemplo.com", "Teste"));
+            new UsuarioRepository(seed).Add(UsuariosDeTeste.Novo(id, $"teste-{id[..8]}", $"{id[..8]}@exemplo.com", "Teste"));
             await new EfUnitOfWork(seed).SaveChanges(default);
         }
 
@@ -45,7 +45,7 @@ public class UnitOfWorkConcurrencyTests
         var usuarioB = (await repoB.Find(id, default))!;
 
         // ...a primeira grava e muda a versão (xmin)...
-        usuarioA.Ativar("kc-1");
+        usuarioA.Habilitar();
         repoA.Update(usuarioA);
         await uowA.SaveChanges(default);
 
@@ -56,6 +56,6 @@ public class UnitOfWorkConcurrencyTests
         Assert.IsType<DbUpdateConcurrencyException>(e.InnerException);
 
         await using var verify = NewContext();
-        Assert.Equal(StatusUsuario.Ativo, (await new UsuarioRepository(verify).Find(id, default))!.Status);
+        Assert.True((await new UsuarioRepository(verify).Find(id, default))!.Habilitado);
     }
 }

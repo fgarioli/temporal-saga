@@ -62,7 +62,7 @@ services:
     ports: ["8025:8025", "1025:1025"]
 
   cadastro-worker:
-    # C# (.NET 8): o dispatcher (entrega os cadastros pendentes ao Temporal) e o worker do Temporal, com o workflow e as activities. Aplica as migrations ao subir.
+    # C# (.NET 8): o dispatcher (entrega os usuários pendentes ao Temporal) e o worker do Temporal, com o workflow e as activities. Aplica as migrations ao subir.
     build:
       context: ./cadastro-service
       target: worker
@@ -80,7 +80,7 @@ services:
     restart: on-failure
 
   cadastro-web:
-    # C# (.NET 8): a API REST. Registra e consulta os cadastros; não conhece o Temporal. Quem executa a saga é o cadastro-worker.
+    # C# (.NET 8): a API REST. Cria, consulta e exclui usuários; não conhece o Temporal. Quem executa a saga é o cadastro-worker.
     build:
       context: ./cadastro-service
       target: web

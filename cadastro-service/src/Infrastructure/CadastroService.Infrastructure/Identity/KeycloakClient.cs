@@ -13,6 +13,7 @@ public sealed class KeycloakClient(HttpClient http, IOptions<KeycloakOptions> op
 {
     private readonly KeycloakOptions kc = options.Value;
 
+    /// <summary>Cria a identidade desabilitada: o usuário só consegue fazer login depois de <see cref="Enable"/>.</summary>
     public async Task<string> Create(NewIdentity newIdentity, CancellationToken ct)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, $"{kc.Url}/admin/realms/{kc.Realm}/users")
@@ -23,7 +24,7 @@ public sealed class KeycloakClient(HttpClient http, IOptions<KeycloakOptions> op
                 email = newIdentity.Email,
                 firstName = newIdentity.PrimeiroNome,
                 lastName = newIdentity.Sobrenome,
-                enabled = true,
+                enabled = false,
                 emailVerified = true,
             }),
         };
@@ -33,6 +34,18 @@ public sealed class KeycloakClient(HttpClient http, IOptions<KeycloakOptions> op
         response.EnsureSuccessStatusCode();
         var location = response.Headers.Location?.ToString() ?? throw new InvalidOperationException("O Keycloak não devolveu o Location");
         return location[(location.LastIndexOf('/') + 1)..];
+    }
+
+    /// <summary>PUT no usuário com enabled=true. Repetível: o Keycloak responde 204 também quando ele já está habilitado.</summary>
+    public async Task Enable(string keycloakId, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"{kc.Url}/admin/realms/{kc.Realm}/users/{Uri.EscapeDataString(keycloakId)}")
+        {
+            Content = JsonContent.Create(new { enabled = true }),
+        };
+        request.Headers.Authorization = new("Bearer", await Token(ct));
+        using var response = await http.SendAsync(request, ct);
+        response.EnsureSuccessStatusCode();
     }
 
     public async Task<IdentityProviderUser?> FindByUsername(string username, CancellationToken ct)

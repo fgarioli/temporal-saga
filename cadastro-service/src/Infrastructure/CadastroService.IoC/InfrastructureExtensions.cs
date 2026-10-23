@@ -1,4 +1,3 @@
-using CadastroService.Core.Domain.Cadastros;
 using CadastroService.Core.Domain.Identity;
 using CadastroService.Core.Domain.Notifications;
 using CadastroService.Core.Domain.Simulations;
@@ -24,7 +23,6 @@ internal static class InfrastructureExtensions
         services.AddDbContext<CadastroDbContext>(o => o.UseNpgsql(config.GetConnectionString("Cadastro")
             ?? throw new InvalidOperationException("ConnectionStrings:Cadastro não configurada")));
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-        services.AddScoped<ICadastroRepository, CadastroRepository>();
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<IEnvioRepository, EnvioRepository>();
 

@@ -1,6 +1,6 @@
 namespace CadastroService.Core.Domain.Identity;
 
-/// <summary>O que o cadastro pede para criar no provedor de identidade.</summary>
+/// <summary>O que o usuário pede para criar no provedor de identidade.</summary>
 public sealed record NewIdentity(string Username, string Email, string Nome)
 {
     public string PrimeiroNome => Nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? Username;

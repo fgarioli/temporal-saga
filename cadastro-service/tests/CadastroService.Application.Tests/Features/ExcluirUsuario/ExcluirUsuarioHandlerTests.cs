@@ -17,6 +17,7 @@ public class ExcluirUsuarioHandlerTests
         public void Add(Usuario usuario) => throw new NotSupportedException();
         public void Update(Usuario usuario) => throw new NotSupportedException();
         public void Remove(Usuario usuario) => Removidos.Add(usuario);
+        public Task<IReadOnlyList<Usuario>> ClaimPending(int max, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork
@@ -34,10 +35,10 @@ public class ExcluirUsuarioHandlerTests
         public Task<ITransaction> BeginTransaction(CancellationToken ct) => throw new NotSupportedException();
     }
 
-    private static Usuario Ativo(string id)
+    private static Usuario Concluido(string id)
     {
-        var usuario = Usuario.Create(id, "ana", "ana@x.com", "Ana Souza");
-        usuario.Ativar("kc-ana");
+        var usuario = Usuario.Create(id, "ana", "ana@x.com", "Ana Souza", DateTimeOffset.UtcNow);
+        usuario.RegistrarPasso(Steps.Concluido);
         return usuario;
     }
 
@@ -55,15 +56,15 @@ public class ExcluirUsuarioHandlerTests
     }
 
     [Fact]
-    public async Task CadastroEmAndamentoDevolveARecusaComAMensagemSemGravar()
+    public async Task ProvisionamentoEmAndamentoDevolveARecusaComAMensagemSemGravar()
     {
         var repo = new FakeUsuarioRepository();
-        repo.Usuarios["u-1"] = Usuario.Create("u-1", "ana", "ana@x.com", "Ana Souza");
+        repo.Usuarios["u-1"] = Usuario.Create("u-1", "ana", "ana@x.com", "Ana Souza", DateTimeOffset.UtcNow);
         var uow = new FakeUnitOfWork();
 
         var result = await new ExcluirUsuarioHandler(repo, uow).Handle("u-1", default);
 
-        Assert.Equal(UsuarioDeletionStatus.CadastroEmAndamento, result.Status);
+        Assert.Equal(UsuarioDeletionStatus.ProvisionamentoEmAndamento, result.Status);
         Assert.Contains("ainda está em andamento", result.Mensagem);
         Assert.Empty(repo.Removidos);
         Assert.Equal(0, uow.SaveChangesCalls);
@@ -73,7 +74,7 @@ public class ExcluirUsuarioHandlerTests
     public async Task ConflitoDeVersaoNaGravacaoDevolveConflict()
     {
         var repo = new FakeUsuarioRepository();
-        repo.Usuarios["u-1"] = Ativo("u-1");
+        repo.Usuarios["u-1"] = Concluido("u-1");
         var uow = new FakeUnitOfWork { ThrowConflict = true };
 
         var result = await new ExcluirUsuarioHandler(repo, uow).Handle("u-1", default);
@@ -83,10 +84,10 @@ public class ExcluirUsuarioHandlerTests
     }
 
     [Fact]
-    public async Task UsuarioAtivoERemovidoEGravado()
+    public async Task UsuarioConcluidoERemovidoEGravado()
     {
         var repo = new FakeUsuarioRepository();
-        var usuario = Ativo("u-1");
+        var usuario = Concluido("u-1");
         repo.Usuarios["u-1"] = usuario;
         var uow = new FakeUnitOfWork();
 

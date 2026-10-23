@@ -4,7 +4,7 @@ using CadastroService.Core.Domain.Usuarios;
 namespace CadastroService.Core.Application.Features.ExcluirUsuario;
 
 /// <summary>
-/// Exclui o usuário e grava. Os desfechos esperados (não existe, cadastro em andamento, conflito de versão)
+/// Exclui o usuário e grava. Os desfechos esperados (não existe, provisionamento em andamento, conflito de versão)
 /// voltam como <see cref="UsuarioDeletionResult"/>, não como exceção.
 /// </summary>
 public sealed class ExcluirUsuarioHandler(IUsuarioRepository usuarios, IUnitOfWork unitOfWork)
@@ -18,7 +18,7 @@ public sealed class ExcluirUsuarioHandler(IUsuarioRepository usuarios, IUnitOfWo
         }
         catch (DomainException e)
         {
-            return new UsuarioDeletionResult(UsuarioDeletionStatus.CadastroEmAndamento, e.Message);
+            return new UsuarioDeletionResult(UsuarioDeletionStatus.ProvisionamentoEmAndamento, e.Message);
         }
         usuarios.Remove(usuario);
         try
