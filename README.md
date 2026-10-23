@@ -171,10 +171,6 @@ O Temporal é um adaptador em `Worker/Features/ProcessarCadastro/Temporal/`: `Te
 
 **Regra de determinismo:** o Temporal reexecuta (replay) o código da saga para reconstruir o estado depois de uma queda. Por isso a `CadastroSaga` não usa `DateTime.Now`, `Guid.NewGuid`, `Task.Run`, `Task.Delay` nem I/O direto; tudo que muda o mundo passa por `ICadastroSagaSteps`.
 
-### Desvios conhecidos
-
-`/health` (`HealthEndpoint`) e `DELETE /usuarios/{id}` (`ExcluirUsuarioEndpoint`) usam `CadastroDbContext`, `IUnitOfWork` e exceções do EF Core direto na Web, em vez de passar só por handlers.
-
 ## Referências
 
 - Garcia-Molina, H.; Salem, K. *Sagas*. ACM SIGMOD, 1987.

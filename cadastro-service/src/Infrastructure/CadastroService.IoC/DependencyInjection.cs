@@ -9,6 +9,7 @@ using CadastroService.Application.Features.ExcluirUsuario;
 using CadastroService.Application.Features.ProcessarCadastro;
 using CadastroService.Application.Features.RejeitarUsuario;
 using CadastroService.Application.Features.SimularFalhas;
+using CadastroService.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,7 @@ public static class DependencyInjection
     public static IServiceCollection AddCadastroWeb(this IServiceCollection services, IConfiguration config)
     {
         services.AddInfrastructure(config);
+        services.AddHealthChecks().AddCheck<PendingMigrationsHealthCheck>("database");
         services.AddCadastrar();
         services.AddConsultarCadastro();
         services.AddConsultarUsuario();
