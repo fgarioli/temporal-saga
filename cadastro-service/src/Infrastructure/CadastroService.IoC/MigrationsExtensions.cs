@@ -1,7 +1,7 @@
 using CadastroService.Infrastructure.Persistence;
 using Microsoft.Extensions.Logging;
 
-namespace CadastroService.IoC;
+namespace CadastroService.Infrastructure.IoC;
 
 public static class MigrationsExtensions
 {

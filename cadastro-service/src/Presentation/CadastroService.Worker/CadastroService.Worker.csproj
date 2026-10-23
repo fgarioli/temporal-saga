@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
   <!-- Container "worker": o dispatcher e o worker do Temporal, com o workflow e as activities (o único projeto com o pacote Temporalio). Também aplica as migrations. Referencia só o IoC. -->
   <PropertyGroup>
+    <RootNamespace>CadastroService.Presentation.Worker</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

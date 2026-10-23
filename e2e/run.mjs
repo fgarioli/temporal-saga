@@ -1,4 +1,4 @@
-// Testes ponta a ponta do cadastro com saga no Temporal. Node 18+, sem dependências.
+// Testes ponta a ponta do provisionamento de usuário com saga no Temporal. Node 18+, sem dependências.
 // Dentro do compose: docker compose run --rm e2e. Do seu computador: node e2e/run.mjs
 const URL_ = {
   cadastro: process.env.CADASTRO_URL ?? 'http://localhost:8090',
@@ -15,7 +15,7 @@ async function http(method, url, body, headers = {}) {
   });
   const text = await res.text();
   let json; try { json = text ? JSON.parse(text) : undefined; } catch { json = text; }
-  return { status: res.status, body: json };
+  return { status: res.status, body: json, location: res.headers.get('location') };
 }
 
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
@@ -27,16 +27,25 @@ async function aguardar(fn, descricao, timeoutMs = 30000) {
   throw new Error(`tempo esgotado esperando: ${descricao}`);
 }
 
-async function cadastrar(username, email, nome = 'Ana Souza') {
-  const r = await http('POST', `${URL_.cadastro}/cadastros`, { username, email, nome });
-  igual(r.status, 202, 'POST /cadastros deveria responder 202');
-  return r.body.cadastroId;
+async function criarUsuario(username, email, nome = 'Ana Souza') {
+  const r = await http('POST', `${URL_.cadastro}/usuarios`, { username, email, nome });
+  igual(r.status, 202, 'POST /usuarios deveria responder 202');
+  igual(r.location, `/usuarios/${r.body.id}`, 'Location do POST');
+  igual([r.body.etapa, r.body.habilitado, r.body.historico], ['Pendente', false, []], 'o usuário nasce Pendente e desabilitado');
+  return r.body.id;
 }
 
-const aguardarFim = (cadastroId) => aguardar(async () => {
-  const r = await http('GET', `${URL_.cadastro}/cadastros/${cadastroId}`);
-  return ['Concluido', 'Cancelado'].includes(r.body?.estado) ? r.body : null;
-}, `fim do cadastro ${cadastroId}`);
+const consultar = async (usuarioId) => (await http('GET', `${URL_.cadastro}/usuarios/${usuarioId}`)).body;
+
+const aguardarEtapa = (usuarioId, etapa) => aguardar(async () => {
+  const u = await consultar(usuarioId);
+  return u?.etapa === etapa ? u : null;
+}, `etapa ${etapa} do usuário ${usuarioId}`);
+
+const aguardarFim = (usuarioId) => aguardar(async () => {
+  const u = await consultar(usuarioId);
+  return ['Concluido', 'Cancelado'].includes(u?.etapa) ? u : null;
+}, `fim do provisionamento do usuário ${usuarioId}`);
 
 async function adminKeycloak(method, caminho, body) {
   const res = await fetch(`${URL_.keycloak}/realms/master/protocol/openid-connect/token`, {
@@ -52,21 +61,21 @@ const cenarios = [];
 const cenario = (nome, fn) => cenarios.push({ nome, fn });
 let primeiro;
 
-cenario('caminho feliz: os 4 passos até Concluido, com o usuário no Keycloak e o e-mail no Mailpit', async () => {
+cenario('caminho feliz: o usuário nasce desabilitado no POST e a saga o leva até Concluido, habilitado, com a identidade habilitada no Keycloak e o e-mail no Mailpit', async () => {
   const username = `ana-${id()}`; const email = `${username}@exemplo.com`;
-  const cadastroId = await cadastrar(username, email);
-  const fim = await aguardarFim(cadastroId);
-  igual(fim.historico, ['CriandoUsuario', 'CriandoIdentidade', 'AtivandoUsuario', 'EnviandoBoasVindas', 'Concluido'], 'histórico');
-  const usuario = (await http('GET', `${URL_.cadastro}/usuarios/${cadastroId}`)).body;
-  igual(usuario.status, 'Ativo', 'status do usuário');
+  const usuarioId = await criarUsuario(username, email);
+  const fim = await aguardarFim(usuarioId);
+  igual(fim.historico, ['CriandoIdentidade', 'HabilitandoUsuario', 'LiberandoAcesso', 'EnviandoBoasVindas', 'Concluido'], 'histórico');
+  igual([fim.etapa, fim.habilitado], ['Concluido', true], 'etapa e habilitado do usuário');
   const noKeycloak = await usuariosNoKeycloak(username);
   igual(noKeycloak.length, 1, 'usuário no Keycloak');
-  igual(noKeycloak[0].id, usuario.keycloakId, 'keycloakId gravado no usuário');
+  igual(noKeycloak[0].id, fim.keycloakId, 'keycloakId gravado no usuário');
+  igual(noKeycloak[0].enabled, true, 'identidade habilitada no Keycloak');
   await aguardar(async () => {
     const r = await http('GET', `${URL_.mailpit}/api/v1/messages`);
     return r.body.messages?.some((m) => m.To?.some((t) => t.Address === email));
   }, 'e-mail de boas-vindas');
-  primeiro = { cadastroId, username, keycloakId: usuario.keycloakId };
+  primeiro = { usuarioId, username, keycloakId: fim.keycloakId };
 });
 
 cenario('perfil padrão: o Keycloak dá o papel "cliente" a todo usuário novo, sem passo na saga', async () => {
@@ -74,45 +83,62 @@ cenario('perfil padrão: o Keycloak dá o papel "cliente" a todo usuário novo, 
   assert(papeis.some((p) => p.name === 'cliente'), `papéis: ${JSON.stringify(papeis.map((p) => p.name))}`);
 });
 
-cenario('Keycloak recusa (username já existe lá): compensa rejeitando o usuário', async () => {
+cenario('Keycloak recusa (username já existe lá): compensa rejeitando o usuário, que fica desabilitado e Cancelado', async () => {
   const username = `bia-${id()}`;
   const criado = await adminKeycloak('POST', '/users', { username, email: `${username}@outro-sistema.com`, firstName: 'Bia', lastName: 'Outro', enabled: true });
   igual(criado.status, 201, 'usuário criado direto no Keycloak, por outro sistema');
-  const cadastroId = await cadastrar(username, `${username}@exemplo.com`, 'Bia Lima');
-  const fim = await aguardarFim(cadastroId);
-  igual(fim.historico, ['CriandoUsuario', 'CriandoIdentidade', 'RejeitandoUsuario', 'Cancelado'], 'histórico');
+  const usuarioId = await criarUsuario(username, `${username}@exemplo.com`, 'Bia Lima');
+  const fim = await aguardarFim(usuarioId);
+  igual(fim.historico, ['CriandoIdentidade', 'RejeitandoUsuario', 'Cancelado'], 'histórico');
   assert(fim.motivo?.includes('Keycloak'), `motivo: ${fim.motivo}`);
-  igual((await http('GET', `${URL_.cadastro}/usuarios/${cadastroId}`)).body.status, 'Rejeitado', 'usuário rejeitado');
+  igual([fim.etapa, fim.habilitado], ['Cancelado', false], 'etapa e habilitado do usuário rejeitado');
 });
 
-cenario('username já usado no sistema: T1 recusa e a saga termina sem nada para compensar', async () => {
-  const cadastroId = await cadastrar(primeiro.username, `repetido-${id()}@exemplo.com`);
-  const fim = await aguardarFim(cadastroId);
-  igual(fim.historico, ['CriandoUsuario', 'Cancelado'], 'histórico');
+cenario('username já usado no sistema: o POST responde 409 e nenhuma saga é iniciada', async () => {
+  const r = await http('POST', `${URL_.cadastro}/usuarios`, { username: primeiro.username, email: `repetido-${id()}@exemplo.com`, nome: 'Ana Souza' });
+  igual(r.status, 409, 'POST /usuarios com username em uso deveria responder 409');
+  igual(r.body, { erro: 'username_em_uso', mensagem: `O username ${primeiro.username} já está em uso` }, 'corpo da recusa');
 });
 
-cenario('falha temporária do Keycloak: resolvida com nova tentativa, sem compensar', async () => {
-  igual((await http('POST', `${URL_.cadastro}/simulations/failures`, { quantity: 2 })).status, 204, 'simulação');
+cenario('falha temporária do Keycloak ao criar: resolvida com nova tentativa, sem compensar', async () => {
+  igual((await http('POST', `${URL_.cadastro}/simulations/failures`, { quantity: 2 })).status, 204, 'simulação sem alvo vale keycloak-create');
   const username = `caio-${id()}`;
-  const cadastroId = await cadastrar(username, `${username}@exemplo.com`, 'Caio Reis');
-  igual((await aguardarFim(cadastroId)).estado, 'Concluido', 'estado');
+  const usuarioId = await criarUsuario(username, `${username}@exemplo.com`, 'Caio Reis');
+  igual((await aguardarFim(usuarioId)).etapa, 'Concluido', 'etapa');
   igual((await usuariosNoKeycloak(username)).length, 1, 'um usuário só no Keycloak');
 });
 
-cenario('semantic lock: o usuário pendente não pode ser excluído (409)', async () => {
-  await http('POST', `${URL_.cadastro}/simulations/failures`, { quantity: 2 }); // deixa o cadastro mais lento
-  const username = `davi-${id()}`;
-  const cadastroId = await cadastrar(username, `${username}@exemplo.com`, 'Davi Melo');
-  await aguardar(async () => (await http('GET', `${URL_.cadastro}/usuarios/${cadastroId}`)).status === 200, 'usuário pendente');
-  igual((await http('DELETE', `${URL_.cadastro}/usuarios/${cadastroId}`)).status, 409, 'exclusão durante a saga');
-  await aguardarFim(cadastroId);
-  igual((await http('DELETE', `${URL_.cadastro}/usuarios/${cadastroId}`)).status, 204, 'exclusão depois da saga');
+cenario('usuário bloqueado durante a saga: a identidade existe desabilitada até o passo LiberarAcesso terminar', async () => {
+  igual((await http('POST', `${URL_.cadastro}/simulations/failures`, { quantity: 4, alvo: 'keycloak-enable' })).status, 204, 'simulação keycloak-enable');
+  igual((await http('POST', `${URL_.cadastro}/simulations/failures`, { quantity: 1, alvo: 'keycloak-delete' })).status, 400, 'alvo desconhecido');
+  const username = `elisa-${id()}`;
+  const usuarioId = await criarUsuario(username, `${username}@exemplo.com`, 'Elisa Prado');
+  const durante = await aguardarEtapa(usuarioId, 'LiberandoAcesso');
+  const noKeycloak = await usuariosNoKeycloak(username);
+  igual(noKeycloak.length, 1, 'a identidade já existe no Keycloak');
+  igual(noKeycloak[0].enabled, false, 'identidade ainda desabilitada enquanto LiberandoAcesso repete');
+  igual(noKeycloak[0].id, durante.keycloakId, 'keycloakId já gravado no usuário');
+  const fim = await aguardarFim(usuarioId);
+  igual([fim.etapa, fim.habilitado], ['Concluido', true], 'etapa e habilitado no fim');
+  igual((await usuariosNoKeycloak(username))[0].enabled, true, 'identidade habilitada no fim');
 });
 
-cenario('o mesmo cadastro não roda duas vezes: o id do workflow é o id do cadastro', async () => {
-  igual((await http('GET', `${URL_.cadastro}/cadastros/${primeiro.cadastroId}`)).body.estado, 'Concluido', 'estado consultado depois de terminado');
+cenario('semantic lock: o usuário não pode ser excluído enquanto a saga roda (409)', async () => {
+  await http('POST', `${URL_.cadastro}/simulations/failures`, { quantity: 2 }); // deixa a saga mais lenta
+  const username = `davi-${id()}`;
+  const usuarioId = await criarUsuario(username, `${username}@exemplo.com`, 'Davi Melo');
+  const durante = await http('DELETE', `${URL_.cadastro}/usuarios/${usuarioId}`);
+  igual(durante.status, 409, 'exclusão durante a saga');
+  igual(durante.body.erro, 'provisionamento_em_andamento', 'erro da exclusão');
+  await aguardarFim(usuarioId);
+  igual((await http('DELETE', `${URL_.cadastro}/usuarios/${usuarioId}`)).status, 204, 'exclusão depois da saga');
+});
+
+cenario('o mesmo usuário não é provisionado duas vezes: o id do workflow é o id do usuário', async () => {
+  igual((await consultar(primeiro.usuarioId)).etapa, 'Concluido', 'etapa consultada depois de terminado');
   igual((await usuariosNoKeycloak(primeiro.username)).length, 1, 'um usuário só no Keycloak');
-  igual((await http('GET', `${URL_.cadastro}/cadastros/nao-existe`)).status, 404, 'cadastro desconhecido');
+  igual((await http('GET', `${URL_.cadastro}/usuarios/nao-existe`)).status, 404, 'usuário desconhecido');
+  igual((await http('GET', `${URL_.cadastro}/cadastros/${primeiro.usuarioId}`)).status, 404, 'a rota /cadastros não existe');
 });
 
 console.log('Aguardando o serviço...');

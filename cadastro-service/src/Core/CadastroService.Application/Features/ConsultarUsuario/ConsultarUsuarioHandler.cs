@@ -1,6 +1,6 @@
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Usuarios;
 
-namespace CadastroService.Application.Features.ConsultarUsuario;
+namespace CadastroService.Core.Application.Features.ConsultarUsuario;
 
 /// <summary>Consulta um usuário. Devolve null se ele não existe.</summary>
 public sealed class ConsultarUsuarioHandler(IUsuarioRepository usuarios)

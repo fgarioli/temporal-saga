@@ -1,8 +1,11 @@
-namespace CadastroService.Application.Features.CriarUsuario;
+using CadastroService.Core.Domain.Usuarios;
 
-/// <summary>O resultado de criar um usuário: criado, ou recusado com o motivo.</summary>
-public sealed record UsuarioCreationResult(bool Created, string? Motivo)
+namespace CadastroService.Core.Application.Features.CriarUsuario;
+
+/// <summary>O desfecho de criar um usuário: criado (Pendente e desabilitado) ou recusado porque o username já está em uso.</summary>
+public abstract record UsuarioCreationResult
 {
-    public static readonly UsuarioCreationResult Ok = new(true, null);
-    public static UsuarioCreationResult Refused(string motivo) => new(false, motivo);
+    public sealed record Created(Usuario Usuario) : UsuarioCreationResult;
+
+    public sealed record UsernameEmUso(string Mensagem) : UsuarioCreationResult;
 }

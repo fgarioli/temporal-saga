@@ -1,17 +1,33 @@
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Common;
+using CadastroService.Core.Domain.Usuarios;
 
-namespace CadastroService.Application.Features.CriarUsuario;
+namespace CadastroService.Core.Application.Features.CriarUsuario;
 
-/// <summary>T1. Não grava nada: quem chamou (a activity) faz o commit.</summary>
-public sealed class CriarUsuarioHandler(IUsuarioRepository usuarios, ILogger<CriarUsuarioHandler> logger)
+/// <summary>
+/// T1, síncrono: grava o usuário Pendente e desabilitado. A API não executa a saga: o dispatcher entrega o usuário ao motor,
+/// que começa pelo Keycloak.
+/// </summary>
+public sealed class CriarUsuarioHandler(IUsuarioRepository usuarios, IUnitOfWork unitOfWork, ILogger<CriarUsuarioHandler> logger)
 {
-    /// <summary>Repetir com os mesmos dados não muda o resultado; um username já usado é recusado.</summary>
-    public async Task<UsuarioCreationResult> Handle(string cadastroId, string username, string email, string nome, CancellationToken ct)
+    public async Task<UsuarioCreationResult> Handle(CriarUsuarioCommand command, CancellationToken ct)
     {
-        if (await usuarios.Find(cadastroId, ct) is not null) return UsuarioCreationResult.Ok;
-        if (await usuarios.IsUsernameInUse(username, cadastroId, ct)) return UsuarioCreationResult.Refused($"O username {username} já está em uso");
-        usuarios.Add(Usuario.Create(cadastroId, username, email, nome));
-        logger.LogInformation("Usuário {Id} criado como pendente", cadastroId);
-        return UsuarioCreationResult.Ok;
+        var id = Guid.NewGuid().ToString();
+        if (await usuarios.IsUsernameInUse(command.Username, id, ct)) return UsernameEmUso(command.Username);
+
+        var usuario = Usuario.Create(id, command.Username, command.Email, command.Nome, DateTimeOffset.UtcNow);
+        usuarios.Add(usuario);
+        try
+        {
+            await unitOfWork.SaveChanges(ct);
+        }
+        catch (UniqueConstraintViolationException)
+        {
+            // Outro usuário com o mesmo username gravou entre a checagem e o commit: o índice único decide.
+            return UsernameEmUso(command.Username);
+        }
+        logger.LogInformation("Usuário {Id} criado para {Username}", id, command.Username);
+        return new UsuarioCreationResult.Created(usuario);
     }
+
+    private static UsuarioCreationResult.UsernameEmUso UsernameEmUso(string username) => new($"O username {username} já está em uso");
 }

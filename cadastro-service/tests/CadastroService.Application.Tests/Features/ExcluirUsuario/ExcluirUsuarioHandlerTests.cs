@@ -1,0 +1,100 @@
+using CadastroService.Core.Application.Features.ExcluirUsuario;
+using CadastroService.Core.Domain.Common;
+using CadastroService.Core.Domain.Usuarios;
+using Xunit;
+
+namespace CadastroService.Core.Application.Tests.Features.ExcluirUsuario;
+
+public class ExcluirUsuarioHandlerTests
+{
+    private sealed class FakeUsuarioRepository : IUsuarioRepository
+    {
+        public Dictionary<string, Usuario> Usuarios { get; } = [];
+        public List<Usuario> Removidos { get; } = [];
+
+        public Task<Usuario?> Find(string id, CancellationToken ct) => Task.FromResult(Usuarios.GetValueOrDefault(id));
+        public Task<bool> IsUsernameInUse(string username, string exceptId, CancellationToken ct) => throw new NotSupportedException();
+        public void Add(Usuario usuario) => throw new NotSupportedException();
+        public void Update(Usuario usuario) => throw new NotSupportedException();
+        public void Remove(Usuario usuario) => Removidos.Add(usuario);
+        public Task<IReadOnlyList<Usuario>> ClaimPending(int max, CancellationToken ct) => throw new NotSupportedException();
+    }
+
+    private sealed class FakeUnitOfWork : IUnitOfWork
+    {
+        public int SaveChangesCalls { get; private set; }
+        public bool ThrowConflict { get; init; }
+
+        public Task SaveChanges(CancellationToken ct)
+        {
+            SaveChangesCalls++;
+            if (ThrowConflict) throw new ConcurrencyConflictException("versão mudou", new InvalidOperationException("xmin"));
+            return Task.CompletedTask;
+        }
+
+        public Task<ITransaction> BeginTransaction(CancellationToken ct) => throw new NotSupportedException();
+    }
+
+    private static Usuario Concluido(string id)
+    {
+        var usuario = Usuario.Create(id, "ana", "ana@x.com", "Ana Souza", DateTimeOffset.UtcNow);
+        usuario.RegistrarPasso(Steps.Concluido);
+        return usuario;
+    }
+
+    [Fact]
+    public async Task UsuarioInexistenteDevolveNotFoundSemGravar()
+    {
+        var repo = new FakeUsuarioRepository();
+        var uow = new FakeUnitOfWork();
+
+        var result = await new ExcluirUsuarioHandler(repo, uow).Handle("u-1", default);
+
+        Assert.Equal(UsuarioDeletionStatus.NotFound, result.Status);
+        Assert.Empty(repo.Removidos);
+        Assert.Equal(0, uow.SaveChangesCalls);
+    }
+
+    [Fact]
+    public async Task ProvisionamentoEmAndamentoDevolveARecusaComAMensagemSemGravar()
+    {
+        var repo = new FakeUsuarioRepository();
+        repo.Usuarios["u-1"] = Usuario.Create("u-1", "ana", "ana@x.com", "Ana Souza", DateTimeOffset.UtcNow);
+        var uow = new FakeUnitOfWork();
+
+        var result = await new ExcluirUsuarioHandler(repo, uow).Handle("u-1", default);
+
+        Assert.Equal(UsuarioDeletionStatus.ProvisionamentoEmAndamento, result.Status);
+        Assert.Contains("ainda está em andamento", result.Mensagem);
+        Assert.Empty(repo.Removidos);
+        Assert.Equal(0, uow.SaveChangesCalls);
+    }
+
+    [Fact]
+    public async Task ConflitoDeVersaoNaGravacaoDevolveConflict()
+    {
+        var repo = new FakeUsuarioRepository();
+        repo.Usuarios["u-1"] = Concluido("u-1");
+        var uow = new FakeUnitOfWork { ThrowConflict = true };
+
+        var result = await new ExcluirUsuarioHandler(repo, uow).Handle("u-1", default);
+
+        Assert.Equal(UsuarioDeletionStatus.Conflict, result.Status);
+        Assert.Equal(1, uow.SaveChangesCalls);
+    }
+
+    [Fact]
+    public async Task UsuarioConcluidoERemovidoEGravado()
+    {
+        var repo = new FakeUsuarioRepository();
+        var usuario = Concluido("u-1");
+        repo.Usuarios["u-1"] = usuario;
+        var uow = new FakeUnitOfWork();
+
+        var result = await new ExcluirUsuarioHandler(repo, uow).Handle("u-1", default);
+
+        Assert.Equal(UsuarioDeletionStatus.Deleted, result.Status);
+        Assert.Same(usuario, Assert.Single(repo.Removidos));
+        Assert.Equal(1, uow.SaveChangesCalls);
+    }
+}

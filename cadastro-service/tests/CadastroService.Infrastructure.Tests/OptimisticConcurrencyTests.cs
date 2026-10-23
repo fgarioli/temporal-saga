@@ -1,4 +1,4 @@
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Usuarios;
 using CadastroService.Infrastructure.Persistence;
 using CadastroService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +29,7 @@ public class OptimisticConcurrencyTests
         var id = Guid.NewGuid().ToString();
         await using (var seed = NewContext())
         {
-            new UsuarioRepository(seed).Add(Usuario.Create(id, $"teste-{id[..8]}", $"{id[..8]}@exemplo.com", "Teste"));
+            new UsuarioRepository(seed).Add(UsuariosDeTeste.Novo(id, $"teste-{id[..8]}", $"{id[..8]}@exemplo.com", "Teste"));
             await seed.SaveChangesAsync();
         }
 
@@ -42,7 +42,7 @@ public class OptimisticConcurrencyTests
         var usuarioB = (await repoB.Find(id, default))!;
 
         // ...a primeira grava e muda a versão (xmin)...
-        usuarioA.Ativar("kc-1");
+        usuarioA.Habilitar();
         repoA.Update(usuarioA);
         await a.SaveChangesAsync();
 
@@ -52,6 +52,6 @@ public class OptimisticConcurrencyTests
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => b.SaveChangesAsync());
 
         await using var verify = NewContext();
-        Assert.Equal(StatusUsuario.Ativo, (await new UsuarioRepository(verify).Find(id, default))!.Status);
+        Assert.True((await new UsuarioRepository(verify).Find(id, default))!.Habilitado);
     }
 }

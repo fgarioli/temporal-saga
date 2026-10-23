@@ -1,4 +1,4 @@
-namespace CadastroService.Domain.Common;
+namespace CadastroService.Core.Domain.Common;
 
 /// <summary>Uma transação aberta por <see cref="IUnitOfWork.BeginTransaction"/>. Sem Commit, o Dispose desfaz tudo.</summary>
 public interface ITransaction : IAsyncDisposable
