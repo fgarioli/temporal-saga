@@ -1,0 +1,42 @@
+{
+  "version": "0.2",
+  "language": "en,pt-BR",
+  "ignorePaths": [
+    "**/bin/**",
+    "**/obj/**",
+    "**/Migrations/**",
+    "**/node_modules/**",
+    "**/*.csproj",
+    "**/*.slnx",
+    "package-lock.json"
+  ],
+  "words": [
+    "appsettings",
+    "aspnet",
+    "axllent",
+    "cenario",
+    "cenarios",
+    "concluido",
+    "davi",
+    "descricao",
+    "dotnet",
+    "excluido",
+    "gravacao",
+    "healthcheck",
+    "historico",
+    "isready",
+    "lanca",
+    "mailpit",
+    "npgsql",
+    "pivo",
+    "postgres",
+    "sigmod",
+    "slnx",
+    "temporalio",
+    "usuario",
+    "usuarios",
+    "versao",
+    "xmin",
+    "xunit"
+  ]
+}
