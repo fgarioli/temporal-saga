@@ -17,11 +17,11 @@ public sealed class CadastroDispatcher(ICadastroRepository cadastros, IUnitOfWor
     {
         await using var transaction = await unitOfWork.BeginTransaction(ct);
         var pending = await cadastros.ClaimPending(BatchSize, ct);
-        foreach (var data in pending)
+        foreach (var cadastro in pending)
         {
-            await runner.Start(data, ct);
-            await cadastros.MarcarIniciado(data.CadastroId, ct);
-            logger.LogInformation("Cadastro {Id} entregue à saga", data.CadastroId);
+            await runner.Start(cadastro.ToData(), ct);
+            cadastro.MarcarIniciado();
+            logger.LogInformation("Cadastro {Id} entregue à saga", cadastro.Id);
         }
         await unitOfWork.SaveChanges(ct);
         await transaction.Commit(ct);

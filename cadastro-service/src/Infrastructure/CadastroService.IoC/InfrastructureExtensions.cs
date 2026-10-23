@@ -32,8 +32,8 @@ internal static class InfrastructureExtensions
         services.AddHttpClient<KeycloakClient>(c => c.Timeout = TimeSpan.FromSeconds(10));
         if (Simulations.Enabled(config))
         {
-            services.AddScoped<SimulatedFailures>();
-            services.AddScoped<ISimulatedFailures>(sp => sp.GetRequiredService<SimulatedFailures>());
+            services.AddScoped<SimulatedFailuresStore>();
+            services.AddScoped<ISimulatedFailures>(sp => sp.GetRequiredService<SimulatedFailuresStore>());
             services.AddScoped<IIdentityProvider, KeycloakWithSimulatedFailures>();
         }
         else

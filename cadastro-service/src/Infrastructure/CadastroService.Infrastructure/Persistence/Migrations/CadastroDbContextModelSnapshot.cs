@@ -22,7 +22,7 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("CadastroService.Infrastructure.Persistence.Entities.CadastroEntity", b =>
+            modelBuilder.Entity("CadastroService.Core.Domain.Cadastros.Cadastro", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text")
@@ -72,7 +72,7 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
                     b.ToTable("cadastros", (string)null);
                 });
 
-            modelBuilder.Entity("CadastroService.Infrastructure.Persistence.Entities.EnvioEntity", b =>
+            modelBuilder.Entity("CadastroService.Core.Domain.Envios.Envio", b =>
                 {
                     b.Property<string>("CadastroId")
                         .HasColumnType("text")
@@ -92,7 +92,7 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
                     b.ToTable("envios", (string)null);
                 });
 
-            modelBuilder.Entity("CadastroService.Infrastructure.Persistence.Entities.SimulatedFailuresEntity", b =>
+            modelBuilder.Entity("CadastroService.Core.Domain.Simulations.SimulatedFailures", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -107,7 +107,7 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
                     b.ToTable("simulated_failures", (string)null);
                 });
 
-            modelBuilder.Entity("CadastroService.Infrastructure.Persistence.Entities.UsuarioEntity", b =>
+            modelBuilder.Entity("CadastroService.Core.Domain.Usuarios.Usuario", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text")
@@ -141,7 +141,7 @@ namespace CadastroService.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("username");
 
-                    b.Property<uint>("Version")
+                    b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("xid")

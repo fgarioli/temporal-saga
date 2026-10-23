@@ -101,7 +101,7 @@ O endpoint `/simulations/failures` existe só para a demonstração: faz o Keycl
 
 ## Organização do código
 
-Uma solution .NET com seis projetos em `src` e três de teste. O modelo é **híbrido**: os projetos da Clean Architecture ficam como camadas, e dentro de Application, Web e Worker o código se organiza por **vertical slices** (`Features/<Slice>/`). Infrastructure e Domain se organizam por tecnologia e por agregado. Regra de dependência, sempre para dentro: **Web e Worker → IoC → Infrastructure e Application → Domain** (o IoC referencia os dois). Web e Worker referenciam só o IoC. O Domain não depende de ninguém, e o Application não conhece o Infrastructure nem o IoC. O Infrastructure não referencia o Application: as portas que ele implementa moram no Domain, e o Application as consome.
+Uma solution .NET com seis projetos em `src` e três de teste. O modelo é **híbrido**: os projetos da Clean Architecture ficam como camadas, e dentro de Application, Web e Worker o código se organiza por **vertical slices** (`Features/<Slice>/`). Infrastructure e Domain se organizam por tecnologia e por agregado. Regra de dependência, sempre para dentro: **Web e Worker → IoC → Infrastructure e Application → Domain** (o IoC referencia os dois). Web e Worker referenciam só o IoC. O Domain não depende de ninguém, e o Application não conhece o Infrastructure nem o IoC. O Infrastructure não referencia o Application: as portas que ele implementa moram no Domain, e o Application as consome. As entidades (`Usuario`, `Cadastro`, `Envio`, `SimulatedFailures`) moram no Domain; o EF mapeia o Domain direto, sem modelo de persistência paralelo, e a configuração de cada entidade fica em `Persistence/Configurations` (uma `IEntityTypeConfiguration` por entidade).
 
 Duas fronteiras:
 
@@ -116,9 +116,9 @@ cadastro-service/
     Core/
       CadastroService.Domain/        por agregado: Usuarios/ (Usuario, StatusUsuario, NovoCadastro, IUsuarioRepository),
                                      Envios/ (Envio, IEnvioRepository), Common/ (IUnitOfWork, ITransaction, DomainException),
-                                     Cadastros/ (CadastroData, CadastroState, Steps, ICadastroRepository),
+                                     Cadastros/ (Cadastro, CadastroData, CadastroState, Steps, ICadastroRepository),
                                      Identity/ (IIdentityProvider, NewIdentity, IdentityProviderUser, IdentityAlreadyExistsException),
-                                     Notifications/ (IEmailSender), Simulations/ (ISimulatedFailures)
+                                     Notifications/ (IEmailSender), Simulations/ (SimulatedFailures, ISimulatedFailures)
       CadastroService.Application/
         Features/                    um slice por caso de uso, com o handler e o que só ele usa:
           Cadastrar/ ConsultarCadastro/ ConsultarUsuario/ ExcluirUsuario/ SimularFalhas/   usados pela Web
@@ -126,7 +126,7 @@ cadastro-service/
           ProcessarCadastro/         CadastroSaga, ICadastroSagaSteps, ISagaRunner, StepPolicy, StepRefusedException,
                                      CadastroDispatcher, RegistrarPassoHandler
     Infrastructure/
-      CadastroService.Infrastructure/ Persistence/ (DbContext, Entities, Repositories, Migrations), Identity/ (cliente do Keycloak),
+      CadastroService.Infrastructure/ Persistence/ (DbContext, Configurations, Repositories, Migrations), Identity/ (cliente do Keycloak),
                                      Email/ (SMTP), Simulations/ (simulação de falhas)
       CadastroService.IoC/           a injeção de dependências: AddCadastroWeb, AddCadastroWorker e ApplyMigrationsAsync
     Presentation/
@@ -139,7 +139,7 @@ cadastro-service/
                                      CadastroActivities, CadastroWorker, TemporalConnection, TemporalExtensions, TemporalOptions,
                                      Saga e Activities (os nomes)
   tests/
-    CadastroService.Domain.Tests/          regras do Usuario, do NovoCadastro e do NewIdentity (referencia só o Domain)
+    CadastroService.Domain.Tests/          regras do Usuario, do Cadastro, do SimulatedFailures, do NovoCadastro e do NewIdentity (referencia só o Domain)
     CadastroService.Application.Tests/     CadastroSaga (com fake de ICadastroSagaSteps), CriarIdentidadeHandler (referencia só o Application)
     CadastroService.Infrastructure.Tests/  teste de integração de concorrência, contra o Postgres
 infra/                           realm do Keycloak (com o default role) e init do Postgres

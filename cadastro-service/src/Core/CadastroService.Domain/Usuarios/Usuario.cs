@@ -16,6 +16,7 @@ public sealed class Usuario
     public string? KeycloakId { get; private set; }
     public string? Motivo { get; private set; }
 
+    // O EF Core usa este construtor para materializar o usuário (os parâmetros casam com as propriedades pelo nome).
     private Usuario(string id, string username, string email, string nome, StatusUsuario status, string? keycloakId, string? motivo)
     {
         Id = id;
@@ -30,9 +31,6 @@ public sealed class Usuario
     /// <summary>T1: o usuário nasce pendente e ainda não pode fazer login.</summary>
     public static Usuario Create(string id, string username, string email, string nome) =>
         new(id, username, email, nome, StatusUsuario.Pendente, null, null);
-
-    public static Usuario Restore(string id, string username, string email, string nome, StatusUsuario status, string? keycloakId, string? motivo) =>
-        new(id, username, email, nome, status, keycloakId, motivo);
 
     /// <summary>T4, repetível: grava o id do Keycloak e libera a trava.</summary>
     public void Ativar(string keycloakId)

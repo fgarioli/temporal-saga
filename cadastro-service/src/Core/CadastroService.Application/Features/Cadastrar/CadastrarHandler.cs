@@ -10,10 +10,10 @@ public sealed class CadastrarHandler(ICadastroRepository cadastros, IUnitOfWork 
 {
     public async Task<CadastroState> Handle(CadastrarCommand command, CancellationToken ct)
     {
-        var data = new CadastroData(Guid.NewGuid().ToString(), command.Username, command.Email, command.Nome);
-        cadastros.Add(data);
+        var cadastro = Cadastro.Create(Guid.NewGuid().ToString(), command.Username, command.Email, command.Nome, DateTimeOffset.UtcNow);
+        cadastros.Add(cadastro);
         await unitOfWork.SaveChanges(ct);
-        logger.LogInformation("Cadastro {Id} registrado para {Username}", data.CadastroId, data.Username);
-        return new CadastroState(data.CadastroId, data.Username, data.Email, Steps.Pendente, [], null, null);
+        logger.LogInformation("Cadastro {Id} registrado para {Username}", cadastro.Id, cadastro.Username);
+        return cadastro.ToState();
     }
 }
