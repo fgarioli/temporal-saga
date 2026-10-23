@@ -1,0 +1,40 @@
+{
+  "realm": "saga",
+  "enabled": true,
+  "displayName": "Saga · cadastro de usuários",
+  "registrationAllowed": false,
+  "duplicateEmailsAllowed": false,
+  "loginWithEmailAllowed": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "cliente",
+        "description": "Perfil padrão de todo usuário cadastrado"
+      },
+      {
+        "name": "offline_access",
+        "description": "${role_offline-access}"
+      },
+      {
+        "name": "uma_authorization",
+        "description": "${role_uma_authorization}"
+      },
+      {
+        "name": "default-roles-saga",
+        "description": "${role_default-roles}",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "offline_access",
+            "uma_authorization",
+            "cliente"
+          ]
+        }
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-saga",
+    "composite": true
+  }
+}

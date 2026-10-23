@@ -1,0 +1,16 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sobe a stack
+        run: docker compose up -d --build
+      - name: Testes ponta a ponta
+        run: docker compose run --rm e2e
+      - name: Testes de integração
+        run: docker compose run --rm integration-tests
+      - name: Logs em caso de falha
+        if: failure()
+        run: docker compose logs --no-color --tail=200

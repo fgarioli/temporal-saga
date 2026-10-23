@@ -1,0 +1,122 @@
+# docker compose up -d --build sobe tudo; docker compose run --rm e2e roda os testes ponta a ponta.
+name: saga-cadastro
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: saga
+      POSTGRES_PASSWORD: saga
+    ports: ["55432:5432"]
+    volumes:
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saga"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  temporal:
+    # Servidor do Temporal: guarda o histórico dos workflows no Postgres e mantém as task queues
+    image: temporalio/auto-setup:1.25.2
+    environment:
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_USER: saga
+      POSTGRES_PWD: saga
+      POSTGRES_SEEDS: postgres
+    ports: ["7233:7233"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  temporal-ui:
+    image: temporalio/ui:2.31.2
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    ports: ["8233:8080"]
+    depends_on:
+      - temporal
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      # A JVM do Keycloak dimensiona a memória pelo limite do container; sem limite, cresce até ser morta.
+      JAVA_OPTS_KC_HEAP: "-XX:MaxRAMPercentage=50 -XX:InitialRAMPercentage=25"
+    mem_limit: 1536m
+    ports: ["8180:8080"]
+    volumes:
+      - ./infra/keycloak/realm-saga.json:/opt/keycloak/data/import/realm-saga.json:ro
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 15s
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports: ["8025:8025", "1025:1025"]
+
+  cadastro-worker:
+    # C# (.NET 8): o dispatcher (entrega os cadastros pendentes ao Temporal) e o worker do Temporal, com o workflow e as activities. Aplica as migrations ao subir.
+    build:
+      context: ./cadastro-service
+      target: worker
+    environment:
+      ConnectionStrings__Cadastro: "Host=postgres;Port=5432;Database=cadastro;Username=saga;Password=saga"
+      Temporal__Address: "temporal:7233"
+      Keycloak__Url: "http://keycloak:8080"
+      Smtp__Host: "mailpit"
+      Smtp__Port: "1025"
+      Simulations__Enabled: "true"   # só para a demonstração
+    depends_on:
+      postgres: { condition: service_healthy }
+      temporal: { condition: service_started }
+      keycloak: { condition: service_healthy }
+    restart: on-failure
+
+  cadastro-web:
+    # C# (.NET 8): a API REST. Registra e consulta os cadastros; não conhece o Temporal. Quem executa a saga é o cadastro-worker.
+    build:
+      context: ./cadastro-service
+      target: web
+    ports: ["8090:8080"]
+    environment:
+      ConnectionStrings__Cadastro: "Host=postgres;Port=5432;Database=cadastro;Username=saga;Password=saga"
+      Simulations__Enabled: "true"   # só para a demonstração: habilita POST /simulations/failures
+    depends_on:
+      postgres: { condition: service_healthy }
+      cadastro-worker: { condition: service_started }
+    restart: on-failure
+
+  e2e:
+    # Testes ponta a ponta: docker compose run --rm e2e
+    image: node:20-alpine
+    profiles: ["test"]
+    working_dir: /e2e
+    volumes:
+      - ./e2e:/e2e:ro
+    environment:
+      CADASTRO_URL: "http://cadastro-web:8080"
+      KEYCLOAK_URL: "http://keycloak:8080"
+      MAILPIT_URL: "http://mailpit:8025"
+    command: ["node", "run.mjs"]
+    depends_on:
+      - cadastro-web
+      - cadastro-worker
+
+  integration-tests:
+    # Concorrência otimista contra um Postgres de verdade: docker compose run --rm integration-tests
+    build:
+      context: ./cadastro-service
+      target: build
+    profiles: ["test"]
+    environment:
+      TEST_POSTGRES: "Host=postgres;Port=5432;Database=cadastro;Username=saga;Password=saga"
+    command: ["dotnet", "test", "tests/CadastroService.Infrastructure.Tests/CadastroService.Infrastructure.Tests.csproj", "--no-restore", "--filter", "Category=Integration", "--logger", "console;verbosity=normal"]
+    depends_on:
+      postgres: { condition: service_healthy }

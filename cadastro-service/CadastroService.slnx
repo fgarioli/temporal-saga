@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/CadastroService.Application/CadastroService.Application.csproj" />
+    <Project Path="src/Core/CadastroService.Domain/CadastroService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/CadastroService.Infrastructure/CadastroService.Infrastructure.csproj" />
+    <Project Path="src/Infrastructure/CadastroService.IoC/CadastroService.IoC.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/CadastroService.Web/CadastroService.Web.csproj" />
+    <Project Path="src/Presentation/CadastroService.Worker/CadastroService.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CadastroService.Application.Tests/CadastroService.Application.Tests.csproj" />
+    <Project Path="tests/CadastroService.Domain.Tests/CadastroService.Domain.Tests.csproj" />
+    <Project Path="tests/CadastroService.Infrastructure.Tests/CadastroService.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>
