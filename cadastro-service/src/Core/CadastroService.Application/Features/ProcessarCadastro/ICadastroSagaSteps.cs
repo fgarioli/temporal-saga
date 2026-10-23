@@ -1,6 +1,6 @@
-using CadastroService.Application.Common.Cadastros;
+using CadastroService.Core.Application.Common.Cadastros;
 
-namespace CadastroService.Application.Features.ProcessarCadastro;
+namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 
 /// <summary>
 /// Os passos da saga de cadastro, como a saga os enxerga: cada método é um passo que o motor executa (e repete, se falhar por

@@ -1,4 +1,4 @@
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Usuarios;
 using CadastroService.Infrastructure.Persistence;
 using CadastroService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;

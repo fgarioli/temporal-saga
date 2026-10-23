@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Casos de uso, portas de saída e a saga (orquestração pura, sem o motor que a executa). Depende só do Domain. -->
   <PropertyGroup>
+    <RootNamespace>CadastroService.Core.Application</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

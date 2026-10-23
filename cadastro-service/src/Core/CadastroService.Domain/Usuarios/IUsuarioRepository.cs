@@ -1,4 +1,4 @@
-namespace CadastroService.Domain.Usuarios;
+namespace CadastroService.Core.Domain.Usuarios;
 
 public interface IUsuarioRepository
 {

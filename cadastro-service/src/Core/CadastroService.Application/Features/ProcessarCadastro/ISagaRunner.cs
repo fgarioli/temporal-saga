@@ -1,6 +1,6 @@
-using CadastroService.Application.Common.Cadastros;
+using CadastroService.Core.Application.Common.Cadastros;
 
-namespace CadastroService.Application.Features.ProcessarCadastro;
+namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 
 /// <summary>Porta de saída: quem entrega a saga ao motor que a executa (implementado no Worker).</summary>
 public interface ISagaRunner

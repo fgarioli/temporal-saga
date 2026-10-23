@@ -1,6 +1,6 @@
-using CadastroService.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Features.ProcessarCadastro;
 
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 public static class TemporalExtensions
 {

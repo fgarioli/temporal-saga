@@ -1,7 +1,7 @@
-using CadastroService.Application.Features.Cadastrar;
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Application.Features.Cadastrar;
+using CadastroService.Core.Domain.Usuarios;
 
-namespace CadastroService.Web.Features.Cadastrar;
+namespace CadastroService.Presentation.Web.Features.Cadastrar;
 
 public static class CadastrarEndpoint
 {

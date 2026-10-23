@@ -1,19 +1,19 @@
-using CadastroService.Application.Features.AtivarUsuario;
-using CadastroService.Application.Features.Cadastrar;
-using CadastroService.Application.Features.ConsultarCadastro;
-using CadastroService.Application.Features.ConsultarUsuario;
-using CadastroService.Application.Features.CriarIdentidade;
-using CadastroService.Application.Features.CriarUsuario;
-using CadastroService.Application.Features.EnviarBoasVindas;
-using CadastroService.Application.Features.ExcluirUsuario;
-using CadastroService.Application.Features.ProcessarCadastro;
-using CadastroService.Application.Features.RejeitarUsuario;
-using CadastroService.Application.Features.SimularFalhas;
+using CadastroService.Core.Application.Features.AtivarUsuario;
+using CadastroService.Core.Application.Features.Cadastrar;
+using CadastroService.Core.Application.Features.ConsultarCadastro;
+using CadastroService.Core.Application.Features.ConsultarUsuario;
+using CadastroService.Core.Application.Features.CriarIdentidade;
+using CadastroService.Core.Application.Features.CriarUsuario;
+using CadastroService.Core.Application.Features.EnviarBoasVindas;
+using CadastroService.Core.Application.Features.ExcluirUsuario;
+using CadastroService.Core.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Features.RejeitarUsuario;
+using CadastroService.Core.Application.Features.SimularFalhas;
 using CadastroService.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CadastroService.IoC;
+namespace CadastroService.Infrastructure.IoC;
 
 public static class DependencyInjection
 {

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Regras e interfaces. Não depende de nenhum outro projeto nem de biblioteca de infraestrutura. -->
   <PropertyGroup>
+    <RootNamespace>CadastroService.Core.Domain</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

@@ -1,8 +1,8 @@
-using CadastroService.Application.Common.Cadastros;
-using CadastroService.Application.Common.Ports;
-using CadastroService.Domain.Common;
+using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Application.Common.Ports;
+using CadastroService.Core.Domain.Common;
 
-namespace CadastroService.Application.Features.ProcessarCadastro;
+namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 
 /// <summary>
 /// Entrega os cadastros pendentes ao motor da saga. Cada ciclo roda numa transação: pega os pendentes (com as linhas travadas),

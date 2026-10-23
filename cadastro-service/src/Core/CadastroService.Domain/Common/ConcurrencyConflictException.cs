@@ -1,4 +1,4 @@
-namespace CadastroService.Domain.Common;
+namespace CadastroService.Core.Domain.Common;
 
 /// <summary>
 /// Outra operação mudou o mesmo registro entre a leitura e a gravação (conflito de versão).

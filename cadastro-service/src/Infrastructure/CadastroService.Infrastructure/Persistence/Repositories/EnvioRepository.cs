@@ -1,4 +1,4 @@
-using CadastroService.Domain.Envios;
+using CadastroService.Core.Domain.Envios;
 using CadastroService.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,4 +1,4 @@
-using CadastroService.Domain.Common;
+using CadastroService.Core.Domain.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace CadastroService.Infrastructure.Persistence.Repositories;

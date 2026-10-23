@@ -1,6 +1,6 @@
 using Temporalio.Worker;
 
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 /// <summary>
 /// O worker do Temporal: fica buscando tarefas na task queue "cadastro" e executa o workflow e as activities.

@@ -1,4 +1,4 @@
-namespace CadastroService.Application.Features.EnviarBoasVindas;
+namespace CadastroService.Core.Application.Features.EnviarBoasVindas;
 
 /// <summary>Porta de saída: quem entrega o e-mail.</summary>
 public interface IEmailSender

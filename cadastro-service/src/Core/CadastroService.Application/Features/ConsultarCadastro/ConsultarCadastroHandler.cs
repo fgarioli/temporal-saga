@@ -1,7 +1,7 @@
-using CadastroService.Application.Common.Cadastros;
-using CadastroService.Application.Common.Ports;
+using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Application.Common.Ports;
 
-namespace CadastroService.Application.Features.ConsultarCadastro;
+namespace CadastroService.Core.Application.Features.ConsultarCadastro;
 
 /// <summary>Consulta o andamento de um cadastro. Devolve null se ele não existe.</summary>
 public sealed class ConsultarCadastroHandler(ICadastroRepository cadastros)

@@ -1,4 +1,4 @@
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 /// <summary>Os nomes que ligam quem inicia o workflow (o TemporalSagaRunner) a quem o define (o TemporalCadastroWorkflow) e ao worker.</summary>
 public static class Saga

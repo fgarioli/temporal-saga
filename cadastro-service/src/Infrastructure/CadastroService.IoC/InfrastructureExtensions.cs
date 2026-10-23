@@ -1,10 +1,10 @@
-using CadastroService.Application.Common.Ports;
-using CadastroService.Application.Features.CriarIdentidade;
-using CadastroService.Application.Features.EnviarBoasVindas;
-using CadastroService.Application.Features.SimularFalhas;
-using CadastroService.Domain.Common;
-using CadastroService.Domain.Envios;
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Application.Common.Ports;
+using CadastroService.Core.Application.Features.CriarIdentidade;
+using CadastroService.Core.Application.Features.EnviarBoasVindas;
+using CadastroService.Core.Application.Features.SimularFalhas;
+using CadastroService.Core.Domain.Common;
+using CadastroService.Core.Domain.Envios;
+using CadastroService.Core.Domain.Usuarios;
 using CadastroService.Infrastructure.Email;
 using CadastroService.Infrastructure.Identity;
 using CadastroService.Infrastructure.Persistence;
@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CadastroService.IoC;
+namespace CadastroService.Infrastructure.IoC;
 
 internal static class InfrastructureExtensions
 {

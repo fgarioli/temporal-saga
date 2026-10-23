@@ -1,4 +1,4 @@
-namespace CadastroService.Application.Features.SimularFalhas;
+namespace CadastroService.Core.Application.Features.SimularFalhas;
 
 /// <summary>Só em demonstração: faz o Keycloak "falhar" nas próximas N criações.</summary>
 public sealed class SimularFalhasHandler(ISimulatedFailures failures)

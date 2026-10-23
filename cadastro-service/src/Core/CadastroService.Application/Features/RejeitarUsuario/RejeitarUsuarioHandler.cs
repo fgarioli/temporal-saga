@@ -1,6 +1,6 @@
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Usuarios;
 
-namespace CadastroService.Application.Features.RejeitarUsuario;
+namespace CadastroService.Core.Application.Features.RejeitarUsuario;
 
 /// <summary>C1, a compensação de T1. Não grava nada: quem chamou (a activity) faz o commit.</summary>
 public sealed class RejeitarUsuarioHandler(IUsuarioRepository usuarios, ILogger<RejeitarUsuarioHandler> logger)

@@ -1,8 +1,8 @@
-using CadastroService.Application.Common.Cadastros;
-using CadastroService.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Application.Features.ProcessarCadastro;
 using Temporalio.Workflows;
 
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 /// <summary>
 /// O workflow do Temporal, fino: só liga a saga (CadastroSaga, no Application) aos passos que chamam activities.

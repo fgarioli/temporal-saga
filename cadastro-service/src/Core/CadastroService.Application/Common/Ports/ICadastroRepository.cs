@@ -1,6 +1,6 @@
-using CadastroService.Application.Common.Cadastros;
+using CadastroService.Core.Application.Common.Cadastros;
 
-namespace CadastroService.Application.Common.Ports;
+namespace CadastroService.Core.Application.Common.Ports;
 
 /// <summary>
 /// Porta de saída: onde o cadastro (o pedido e o andamento da saga) fica gravado. Nenhum método grava sozinho;

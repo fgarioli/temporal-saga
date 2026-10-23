@@ -1,4 +1,4 @@
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 /// <summary>Os nomes das activities e o tipo de erro que significa recusa de negócio.</summary>
 public static class Activities

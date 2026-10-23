@@ -1,4 +1,4 @@
-namespace CadastroService.Application.Features.ExcluirUsuario;
+namespace CadastroService.Core.Application.Features.ExcluirUsuario;
 
 public enum UsuarioDeletionStatus { Deleted, NotFound, CadastroEmAndamento, Conflict }
 

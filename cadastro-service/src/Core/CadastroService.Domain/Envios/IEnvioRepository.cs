@@ -1,4 +1,4 @@
-namespace CadastroService.Domain.Envios;
+namespace CadastroService.Core.Domain.Envios;
 
 public interface IEnvioRepository
 {

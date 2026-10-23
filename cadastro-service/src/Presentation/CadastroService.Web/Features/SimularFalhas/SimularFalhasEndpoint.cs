@@ -1,6 +1,6 @@
-using CadastroService.Application.Features.SimularFalhas;
+using CadastroService.Core.Application.Features.SimularFalhas;
 
-namespace CadastroService.Web.Features.SimularFalhas;
+namespace CadastroService.Presentation.Web.Features.SimularFalhas;
 
 public static class SimularFalhasEndpoint
 {

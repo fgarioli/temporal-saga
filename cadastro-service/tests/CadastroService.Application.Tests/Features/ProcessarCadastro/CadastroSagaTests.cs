@@ -1,8 +1,8 @@
-using CadastroService.Application.Common.Cadastros;
-using CadastroService.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Application.Features.ProcessarCadastro;
 using Xunit;
 
-namespace CadastroService.Application.Tests.Features.ProcessarCadastro;
+namespace CadastroService.Core.Application.Tests.Features.ProcessarCadastro;
 
 public class CadastroSagaTests
 {

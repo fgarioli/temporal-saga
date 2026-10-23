@@ -1,4 +1,4 @@
-using CadastroService.Application.Features.SimularFalhas;
+using CadastroService.Core.Application.Features.SimularFalhas;
 using CadastroService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

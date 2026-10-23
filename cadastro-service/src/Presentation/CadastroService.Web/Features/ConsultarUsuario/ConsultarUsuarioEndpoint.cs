@@ -1,6 +1,6 @@
-using CadastroService.Application.Features.ConsultarUsuario;
+using CadastroService.Core.Application.Features.ConsultarUsuario;
 
-namespace CadastroService.Web.Features.ConsultarUsuario;
+namespace CadastroService.Presentation.Web.Features.ConsultarUsuario;
 
 public static class ConsultarUsuarioEndpoint
 {

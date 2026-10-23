@@ -1,6 +1,6 @@
-using CadastroService.Domain.Common;
+using CadastroService.Core.Domain.Common;
 
-namespace CadastroService.Domain.Usuarios;
+namespace CadastroService.Core.Domain.Usuarios;
 
 /// <summary>
 /// O usuário da aplicação. O status também é o estado da saga do lado do banco: Pendente enquanto o cadastro

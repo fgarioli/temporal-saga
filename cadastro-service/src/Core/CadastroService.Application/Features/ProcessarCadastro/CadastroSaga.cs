@@ -1,6 +1,6 @@
-using CadastroService.Application.Common.Cadastros;
+using CadastroService.Core.Application.Common.Cadastros;
 
-namespace CadastroService.Application.Features.ProcessarCadastro;
+namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 
 /// <summary>
 /// A saga de cadastro: T1 CriarUsuario (compensável), T2 CriarNoKeycloak (pivô), T3 AtivarUsuario, T4 EnviarBoasVindas;

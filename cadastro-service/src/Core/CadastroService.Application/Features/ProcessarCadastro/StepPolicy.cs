@@ -1,4 +1,4 @@
-namespace CadastroService.Application.Features.ProcessarCadastro;
+namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 
 /// <summary>
 /// Quanto tempo um passo pode levar e como repetir quando falha por motivo técnico: espera inicial, multiplicador e espera máxima

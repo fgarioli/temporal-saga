@@ -1,8 +1,8 @@
-using CadastroService.Application.Common.Cadastros;
-using CadastroService.Application.Common.Ports;
-using CadastroService.Domain.Common;
+using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Application.Common.Ports;
+using CadastroService.Core.Domain.Common;
 
-namespace CadastroService.Application.Features.Cadastrar;
+namespace CadastroService.Core.Application.Features.Cadastrar;
 
 /// <summary>
 /// Registra o pedido de cadastro. A API não executa a saga: ela só grava o pedido como Pendente, e o dispatcher o entrega ao motor.

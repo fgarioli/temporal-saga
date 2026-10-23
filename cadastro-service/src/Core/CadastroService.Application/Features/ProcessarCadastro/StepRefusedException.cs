@@ -1,4 +1,4 @@
-namespace CadastroService.Application.Features.ProcessarCadastro;
+namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 
 /// <summary>
 /// Um passo da saga recusou o cadastro por regra de negócio (por exemplo, username já em uso). Não adianta tentar de novo:

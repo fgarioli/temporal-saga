@@ -1,7 +1,7 @@
-using CadastroService.Domain.Common;
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Common;
+using CadastroService.Core.Domain.Usuarios;
 
-namespace CadastroService.Application.Features.ExcluirUsuario;
+namespace CadastroService.Core.Application.Features.ExcluirUsuario;
 
 /// <summary>
 /// Exclui o usuário e grava. Os desfechos esperados (não existe, cadastro em andamento, conflito de versão)

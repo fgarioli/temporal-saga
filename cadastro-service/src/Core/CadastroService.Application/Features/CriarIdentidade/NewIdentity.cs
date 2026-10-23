@@ -1,4 +1,4 @@
-namespace CadastroService.Application.Features.CriarIdentidade;
+namespace CadastroService.Core.Application.Features.CriarIdentidade;
 
 /// <summary>O que o cadastro pede para criar no provedor de identidade.</summary>
 public sealed record NewIdentity(string Username, string Email, string Nome)

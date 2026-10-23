@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using Temporalio.Client;
 
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 /// <summary>Conexão com o servidor do Temporal, aberta na primeira vez que alguém precisa dela.</summary>
 public sealed class TemporalConnection(IOptions<TemporalOptions> options, ILogger<TemporalConnection> logger)

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace CadastroService.Domain.Usuarios;
+namespace CadastroService.Core.Domain.Usuarios;
 
 /// <summary>Pedido de cadastro já validado e normalizado.</summary>
 public sealed partial record NovoCadastro

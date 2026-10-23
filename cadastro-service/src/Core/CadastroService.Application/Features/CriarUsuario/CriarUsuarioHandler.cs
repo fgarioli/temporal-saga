@@ -1,6 +1,6 @@
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Usuarios;
 
-namespace CadastroService.Application.Features.CriarUsuario;
+namespace CadastroService.Core.Application.Features.CriarUsuario;
 
 /// <summary>T1. Não grava nada: quem chamou (a activity) faz o commit.</summary>
 public sealed class CriarUsuarioHandler(IUsuarioRepository usuarios, ILogger<CriarUsuarioHandler> logger)

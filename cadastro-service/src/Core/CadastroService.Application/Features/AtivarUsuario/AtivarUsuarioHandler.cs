@@ -1,6 +1,6 @@
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Usuarios;
 
-namespace CadastroService.Application.Features.AtivarUsuario;
+namespace CadastroService.Core.Application.Features.AtivarUsuario;
 
 /// <summary>T3, repetível. Não grava nada: quem chamou (a activity) faz o commit.</summary>
 public sealed class AtivarUsuarioHandler(IUsuarioRepository usuarios, ILogger<AtivarUsuarioHandler> logger)

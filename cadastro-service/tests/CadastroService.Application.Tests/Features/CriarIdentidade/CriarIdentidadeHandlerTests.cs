@@ -1,8 +1,8 @@
-using CadastroService.Application.Features.CriarIdentidade;
+using CadastroService.Core.Application.Features.CriarIdentidade;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace CadastroService.Application.Tests.Features.CriarIdentidade;
+namespace CadastroService.Core.Application.Tests.Features.CriarIdentidade;
 
 public class CriarIdentidadeHandlerTests
 {

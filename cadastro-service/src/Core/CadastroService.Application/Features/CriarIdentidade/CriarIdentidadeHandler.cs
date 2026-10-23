@@ -1,4 +1,4 @@
-namespace CadastroService.Application.Features.CriarIdentidade;
+namespace CadastroService.Core.Application.Features.CriarIdentidade;
 
 /// <summary>
 /// T2, o pivô: cria o usuário no Keycloak. Falhas técnicas (rede, Keycloak fora do ar) sobem como exceção, e o

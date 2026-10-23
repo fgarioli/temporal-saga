@@ -1,6 +1,6 @@
-using CadastroService.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Features.ProcessarCadastro;
 
-namespace CadastroService.Worker.Features.ProcessarCadastro;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro;
 
 /// <summary>
 /// Entrega os cadastros pendentes à saga: a cada segundo, roda um ciclo do CadastroDispatcher num escopo novo (um DbContext por ciclo).

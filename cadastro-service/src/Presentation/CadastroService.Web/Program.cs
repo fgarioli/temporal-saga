@@ -1,10 +1,10 @@
-using CadastroService.IoC;
-using CadastroService.Web.Features.Cadastrar;
-using CadastroService.Web.Features.ConsultarCadastro;
-using CadastroService.Web.Features.ConsultarUsuario;
-using CadastroService.Web.Features.ExcluirUsuario;
-using CadastroService.Web.Features.Health;
-using CadastroService.Web.Features.SimularFalhas;
+using CadastroService.Infrastructure.IoC;
+using CadastroService.Presentation.Web.Features.Cadastrar;
+using CadastroService.Presentation.Web.Features.ConsultarCadastro;
+using CadastroService.Presentation.Web.Features.ConsultarUsuario;
+using CadastroService.Presentation.Web.Features.ExcluirUsuario;
+using CadastroService.Presentation.Web.Features.Health;
+using CadastroService.Presentation.Web.Features.SimularFalhas;
 
 // Container "web": a API REST. Ela só registra e consulta os cadastros; quem executa a saga é o container worker.
 var builder = WebApplication.CreateBuilder(args);

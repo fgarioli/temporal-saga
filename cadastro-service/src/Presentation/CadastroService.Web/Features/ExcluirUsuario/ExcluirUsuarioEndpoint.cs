@@ -1,6 +1,6 @@
-using CadastroService.Application.Features.ExcluirUsuario;
+using CadastroService.Core.Application.Features.ExcluirUsuario;
 
-namespace CadastroService.Web.Features.ExcluirUsuario;
+namespace CadastroService.Presentation.Web.Features.ExcluirUsuario;
 
 public static class ExcluirUsuarioEndpoint
 {

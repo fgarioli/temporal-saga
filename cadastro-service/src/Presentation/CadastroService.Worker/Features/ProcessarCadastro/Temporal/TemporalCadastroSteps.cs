@@ -1,10 +1,10 @@
-using CadastroService.Application.Common.Cadastros;
-using CadastroService.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Application.Features.ProcessarCadastro;
 using Temporalio.Common;
 using Temporalio.Exceptions;
 using Temporalio.Workflows;
 
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 /// <summary>
 /// Os passos da saga como activities do Temporal, chamadas pelo nome (Activities). Falhas técnicas são repetidas pelo Temporal

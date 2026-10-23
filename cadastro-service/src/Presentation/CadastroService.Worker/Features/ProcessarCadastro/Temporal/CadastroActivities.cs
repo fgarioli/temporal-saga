@@ -1,14 +1,14 @@
-using CadastroService.Application.Features.AtivarUsuario;
-using CadastroService.Application.Features.CriarIdentidade;
-using CadastroService.Application.Features.CriarUsuario;
-using CadastroService.Application.Features.EnviarBoasVindas;
-using CadastroService.Application.Features.ProcessarCadastro;
-using CadastroService.Application.Features.RejeitarUsuario;
-using CadastroService.Domain.Common;
+using CadastroService.Core.Application.Features.AtivarUsuario;
+using CadastroService.Core.Application.Features.CriarIdentidade;
+using CadastroService.Core.Application.Features.CriarUsuario;
+using CadastroService.Core.Application.Features.EnviarBoasVindas;
+using CadastroService.Core.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Features.RejeitarUsuario;
+using CadastroService.Core.Domain.Common;
 using Temporalio.Activities;
 using Temporalio.Exceptions;
 
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 /// <summary>
 /// As activities do workflow: a porta de entrada pela qual o Temporal chama os casos de uso do Application. O nome de cada uma é o

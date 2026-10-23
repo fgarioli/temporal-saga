@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace CadastroService.Web.Features.Health;
+namespace CadastroService.Presentation.Web.Features.Health;
 
 public static class HealthEndpoint
 {

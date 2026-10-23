@@ -1,4 +1,4 @@
-namespace CadastroService.Application.Common.Cadastros;
+namespace CadastroService.Core.Application.Common.Cadastros;
 
 /// <summary>Os estados por que um cadastro passa.</summary>
 public static class Steps

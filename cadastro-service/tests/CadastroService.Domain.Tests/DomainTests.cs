@@ -1,8 +1,8 @@
-using CadastroService.Domain.Common;
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Domain.Common;
+using CadastroService.Core.Domain.Usuarios;
 using Xunit;
 
-namespace CadastroService.Domain.Tests;
+namespace CadastroService.Core.Domain.Tests;
 
 public class DomainTests
 {

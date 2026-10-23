@@ -1,9 +1,9 @@
-using CadastroService.Application.Features.ExcluirUsuario;
-using CadastroService.Domain.Common;
-using CadastroService.Domain.Usuarios;
+using CadastroService.Core.Application.Features.ExcluirUsuario;
+using CadastroService.Core.Domain.Common;
+using CadastroService.Core.Domain.Usuarios;
 using Xunit;
 
-namespace CadastroService.Application.Tests.Features.ExcluirUsuario;
+namespace CadastroService.Core.Application.Tests.Features.ExcluirUsuario;
 
 public class ExcluirUsuarioHandlerTests
 {

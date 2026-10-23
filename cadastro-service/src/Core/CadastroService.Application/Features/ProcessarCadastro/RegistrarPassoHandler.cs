@@ -1,6 +1,6 @@
-using CadastroService.Application.Common.Ports;
+using CadastroService.Core.Application.Common.Ports;
 
-namespace CadastroService.Application.Features.ProcessarCadastro;
+namespace CadastroService.Core.Application.Features.ProcessarCadastro;
 
 /// <summary>Grava o andamento do cadastro (estado, histórico, motivo e id no Keycloak) que a consulta da API devolve.</summary>
 public sealed class RegistrarPassoHandler(ICadastroRepository cadastros)

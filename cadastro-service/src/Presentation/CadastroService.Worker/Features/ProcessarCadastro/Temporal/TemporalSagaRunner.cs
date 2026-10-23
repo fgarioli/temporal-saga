@@ -1,10 +1,10 @@
-using CadastroService.Application.Common.Cadastros;
-using CadastroService.Application.Features.ProcessarCadastro;
+using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Application.Features.ProcessarCadastro;
 using Temporalio.Api.Enums.V1;
 using Temporalio.Client;
 using Temporalio.Exceptions;
 
-namespace CadastroService.Worker.Features.ProcessarCadastro.Temporal;
+namespace CadastroService.Presentation.Worker.Features.ProcessarCadastro.Temporal;
 
 /// <summary>
 /// Inicia o workflow no Temporal. O id do workflow é o id do cadastro, então o mesmo cadastro nunca roda duas vezes:

@@ -1,4 +1,4 @@
-namespace CadastroService.Domain.Common;
+namespace CadastroService.Core.Domain.Common;
 
 /// <summary>Grava tudo o que foi alterado numa única transação. Um conflito de versão lança <see cref="ConcurrencyConflictException"/>.</summary>
 public interface IUnitOfWork

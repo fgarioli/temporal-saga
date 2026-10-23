@@ -1,6 +1,6 @@
 using System.Text.Json;
-using CadastroService.Application.Common.Cadastros;
-using CadastroService.Application.Common.Ports;
+using CadastroService.Core.Application.Common.Cadastros;
+using CadastroService.Core.Application.Common.Ports;
 using CadastroService.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 

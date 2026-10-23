@@ -1,6 +1,6 @@
-using CadastroService.Domain.Envios;
+using CadastroService.Core.Domain.Envios;
 
-namespace CadastroService.Application.Features.EnviarBoasVindas;
+namespace CadastroService.Core.Application.Features.EnviarBoasVindas;
 
 /// <summary>
 /// T4, repetível. O registro do envio evita mandar o e-mail de novo quando o Temporal repete a activity.
